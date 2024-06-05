@@ -5,7 +5,7 @@ import 'package:sacred_hearts/users/userPreferences/user_preferences.dart';
 
 
 class CurrentUser extends GetxController {
-  Rx<User> _currentUser = User(0, '', '', '', 0, 0).obs;
+  final Rx<User> _currentUser = User(0, '', '', '', 0, 0).obs;
 
   User get user => _currentUser.value;
 

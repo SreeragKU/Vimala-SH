@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:sacred_hearts/api_connection/api_connection.dart';
 import 'package:open_file/open_file.dart';
-import 'package:sacred_hearts/users/model/user.dart';
+import 'package:sacred_hearts/users/updateMember/edit_member.dart';
 import 'package:sacred_hearts/users/userPreferences/user_preferences.dart';
 
 class MemberScreen extends StatefulWidget {
@@ -21,8 +21,8 @@ class _MemberScreenState extends State<MemberScreen> {
   int totalPages = 1;
   bool isLoading = false;
   bool isFetching = false;
-  ScrollController _scrollController = ScrollController();
-  TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -112,17 +112,17 @@ class _MemberScreenState extends State<MemberScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Confirm Deletion'),
+            title: const Text('Confirm Deletion'),
             content: Text('Are you sure you want to delete user with ID: $userId?'),
             actions: <Widget>[
               TextButton(
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
                 },
               ),
               TextButton(
-                child: Text('Delete'),
+                child: const Text('Delete'),
                 onPressed: () async {
                   // Proceed with deletion
                   final response = await http.delete(
@@ -135,18 +135,17 @@ class _MemberScreenState extends State<MemberScreen> {
 
                     // Show SnackBar with delete status message
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Member deleted successfully'),
                         duration: Duration(seconds: 2), // Adjust duration as needed
                       ),
                     );
 
                     // Fetch data after a short delay to allow the SnackBar to be displayed
-                    Future.delayed(Duration(seconds: 2), () {
+                    Future.delayed(const Duration(seconds: 2), () {
                       fetchData();
                     });
                   } else {
-                    print('Failed to delete member: ${response.body}');
                   }
                 },
               ),
@@ -155,7 +154,6 @@ class _MemberScreenState extends State<MemberScreen> {
         },
       );
     } catch (error) {
-      print('Error deleting member: $error');
     }
   }
 
@@ -167,7 +165,6 @@ class _MemberScreenState extends State<MemberScreen> {
       final dir = await getExternalStorageDirectory();
       final file = File('${dir?.path}/user_details.pdf');
       await file.writeAsBytes(response.bodyBytes);
-      print('PDF downloaded successfully');
       openDownloadedPdf(file);
     } else {
       throw Exception('Failed to load user details');
@@ -202,7 +199,7 @@ class _MemberScreenState extends State<MemberScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Members'),
+        title: const Text('Members'),
       ),
       body: Column(
         children: [
@@ -213,17 +210,17 @@ class _MemberScreenState extends State<MemberScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Search by name...',
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.search),
+                  icon: const Icon(Icons.search),
                   onPressed: search,
                 ),
                 IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: clearSearch,
                 ),
               ],
@@ -231,13 +228,13 @@ class _MemberScreenState extends State<MemberScreen> {
           ),
           Expanded(
             child: memberData.isEmpty && isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
               controller: _scrollController,
               itemCount: memberData.length + (isFetching ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == memberData.length) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else {
                   final member = memberData[index];
                   final base64Image = member['img_url'];
@@ -256,7 +253,7 @@ class _MemberScreenState extends State<MemberScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.picture_as_pdf),
+                          icon: const Icon(Icons.picture_as_pdf),
                           onPressed: () {
                             fetchUserDetails(member['user_id']).catchError(
                                   (error) => print('Error downloading PDF: $error'),
@@ -267,17 +264,27 @@ class _MemberScreenState extends State<MemberScreen> {
                           future: RememberUserPrefs().checkUserPermissions(),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
-                              return CircularProgressIndicator();
+                              return const CircularProgressIndicator();
                             }
                             if (snapshot.hasError) {
-                              return Icon(Icons.error);
+                              return const Icon(Icons.error);
                             }
                             final currentUserHasPermission = snapshot.data ?? false;
                             if (currentUserHasPermission) {
                               return PopupMenuButton<String>(
-                                icon: Icon(Icons.more_vert),
+                                icon: const Icon(Icons.more_vert),
                                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                  PopupMenuItem<String>(
+                                  const PopupMenuItem<String>(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem<String>(
                                     value: 'delete',
                                     child: Row(
                                       children: [
@@ -289,20 +296,28 @@ class _MemberScreenState extends State<MemberScreen> {
                                   ),
                                 ],
                                 onSelected: (String action) {
-                                  if (action == 'delete') {
+                                  if (action == 'edit') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditMemberScreen(userId: member['user_id']),
+                                      ),
+                                    );
+                                  } else if (action == 'delete') {
                                     deleteMember(context, member['user_id']);
                                   }
                                 },
                               );
-                            }
-                            else {
-                              return SizedBox();
+
+                            } else {
+                              return const SizedBox();
                             }
                           },
                         ),
                       ],
                     ),
                   );
+
                 }
               },
             ),
@@ -314,12 +329,12 @@ class _MemberScreenState extends State<MemberScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             IconButton(
-              icon: Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back),
               onPressed: previousPage,
             ),
             Text('Page $currentPage / $totalPages'),
             IconButton(
-              icon: Icon(Icons.arrow_forward),
+              icon: const Icon(Icons.arrow_forward),
               onPressed: nextPage,
             ),
           ],

@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     alignment: Alignment.center,
                                     child: Obx(() => isLoading.value
-                                        ? CircularProgressIndicator(
+                                        ? const CircularProgressIndicator(
                                       valueColor:
                                       AlwaysStoppedAnimation<Color>(
                                         Colors.white,

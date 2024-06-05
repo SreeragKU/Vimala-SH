@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     home: HomeScreen(),
   ));
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +16,11 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 300,
               child: PageView(
-                children: [
+                children: const [
                   SliderWidget(
                     imageUrl: 'images/slider1.jpg',
                     caption1: 'TRANSFORMING LIVES',
@@ -37,15 +37,15 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Important Links',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Column(
                     children: [
                       _buildLinkItem(
@@ -107,10 +107,10 @@ class HomeScreen extends StatelessWidget {
               height: 110,
               width: 110,
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Text(
               title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -130,8 +130,8 @@ class SliderWidget extends StatelessWidget {
     required this.caption1,
     required this.caption2,
     required this.statement,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +154,7 @@ class SliderWidget extends StatelessWidget {
               children: [
                 Text(
                   caption1,
-                  style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold, shadows: [
+                  style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold, shadows: [
                     Shadow(
                       blurRadius: 20.0,
                       color: Colors.black,
@@ -162,10 +162,10 @@ class SliderWidget extends StatelessWidget {
                     ),
                   ]),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   caption2,
-                  style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold, shadows: [
+                  style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold, shadows: [
                     Shadow(
                       blurRadius: 20.0,
                       color: Colors.black,
@@ -179,11 +179,11 @@ class SliderWidget extends StatelessWidget {
           Positioned(
             bottom: 20,
             left: 20,
-            child: Container(
+            child: SizedBox(
               width: MediaQuery.of(context).size.width - 40,
               child: Text(
                 statement,
-                style: TextStyle(fontSize: 24, color: Colors.white, shadows: [
+                style: const TextStyle(fontSize: 24, color: Colors.white, shadows: [
                   Shadow(
                     blurRadius: 20.0,
                     color: Colors.black,

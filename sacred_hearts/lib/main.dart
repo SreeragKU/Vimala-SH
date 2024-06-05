@@ -54,7 +54,7 @@ class SplashScreen extends StatelessWidget {
                   );
                 } else {
                   if (dataSnapshot.data == null) {
-                    return LoginScreen();
+                    return const LoginScreen();
                   } else {
                     return DashboardFrag();
                   }

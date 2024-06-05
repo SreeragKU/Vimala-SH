@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   open_file: ^3.3.2
+  flutter_lints: ^4.0.0
   cupertino_icons: ^1.0.6
   get: ^4.6.6
   http: ^1.2.1

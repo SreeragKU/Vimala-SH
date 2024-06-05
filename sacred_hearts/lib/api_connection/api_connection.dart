@@ -1,6 +1,6 @@
 class API
 {
-  static const hostConnect = "https://www.vimalashc.com/profile/api_sh";
+  static const hostConnect = "http://192.168.1.7/vimala/profile/api_sh";
 
   static const hostConnection = "$hostConnect/user";
 
@@ -15,4 +15,10 @@ class API
 
   //delete
   static const delete = "$hostConnect/user/delete.php";
+
+  //fetch
+  static const fetch = "$hostConnect/user/fetch.php";
+
+  //edit
+  static const edit = "$hostConnect/user/update.php";
 }
