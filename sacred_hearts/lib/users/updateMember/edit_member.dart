@@ -277,6 +277,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _accreditationToControllers = _accreditations.map((accredit) => TextEditingController(text: accredit['acc_to'])).toList();
           _accreditationAtControllers = _accreditations.map((accredit) => TextEditingController(text: accredit['acc_at'])).toList();
           _accreditationPlaceControllers = _accreditations.map((accredit) => TextEditingController(text: accredit['place'])).toList();
+
+          // Integrate acc_id into _accreditations list
+          for (int i = 0; i < _accreditations.length; i++) {
+            _accreditations[i]['acc_id'] = data['accredit'][i]['acc_id'];
+          }
         }
 
         if (data['user_school'] is List && data['user_school'].isNotEmpty) {
@@ -286,6 +291,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _userSchoolUniversityControllers = _userSchoolDetails.map((detail) => TextEditingController(text: detail['university'])).toList();
           _userSchoolAddressControllers = _userSchoolDetails.map((detail) => TextEditingController(text: detail['school_address'])).toList();
           _userSchoolYearOfPassoutControllers = _userSchoolDetails.map((detail) => TextEditingController(text: detail['year_of_passout'])).toList();
+
+          // Integrate school_id into _userSchoolDetails list
+          for (int i = 0; i < _userSchoolDetails.length; i++) {
+            _userSchoolDetails[i]['school_id'] = data['user_school'][i]['school_id'];
+          }
         }
 
         if (data['plus_two'] is List && data['plus_two'].isNotEmpty) {
@@ -295,6 +305,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _plusTwoBoardControllers = _plusTwoDetails.map((detail) => TextEditingController(text: detail['board_university'])).toList();
           _plusTwoYearOfPassoutControllers = _plusTwoDetails.map((detail) => TextEditingController(text: detail['year_of_passout'])).toList();
           _plusTwoSchoolAddressControllers = _plusTwoDetails.map((detail) => TextEditingController(text: detail['school_address'])).toList();
+
+          // Integrate plus_two_id into _plusTwoDetails list
+          for (int i = 0; i < _plusTwoDetails.length; i++) {
+            _plusTwoDetails[i]['plus_two_id'] = data['plus_two'][i]['plus_two_id'];
+          }
         }
 
         if (data['ugrad'] is List && data['ugrad'].isNotEmpty) {
@@ -305,6 +320,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _ugradBoardControllers = _ugradDetails.map((detail) => TextEditingController(text: detail['board_university'])).toList();
           _ugradYearOfPassoutControllers = _ugradDetails.map((detail) => TextEditingController(text: detail['year_of_passout'])).toList();
           _ugradColNameAddressControllers = _ugradDetails.map((detail) => TextEditingController(text: detail['col_name_address'])).toList();
+
+          // Integrate user_ud_id into _ugradDetails list
+          for (int i = 0; i < _ugradDetails.length; i++) {
+            _ugradDetails[i]['user_ud_id'] = data['ugrad'][i]['user_ud_id'];
+          }
         }
 
         if (data['pg'] is List && data['pg'].isNotEmpty) {
@@ -315,7 +335,13 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _pgBoardControllers = _pgDetails.map((detail) => TextEditingController(text: detail['board_university'])).toList();
           _pgYearOfPassoutControllers = _pgDetails.map((detail) => TextEditingController(text: detail['year_of_passout'])).toList();
           _pgColNameAddressControllers = _pgDetails.map((detail) => TextEditingController(text: detail['col_name_address'])).toList();
+
+          // Integrate user_pg_id into _pgDetails list
+          for (int i = 0; i < _pgDetails.length; i++) {
+            _pgDetails[i]['user_pg_id'] = data['pg'][i]['user_pg_id'];
+          }
         }
+
 
         if (data['family'] is List && data['family'].isNotEmpty) {
           _familyData = List<Map<String, dynamic>>.from(data['family']);
@@ -343,6 +369,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _occupationControllers = _siblingsData.map((detail) => TextEditingController(text: detail['occupation'])).toList();
           _addressControllers = _siblingsData.map((detail) => TextEditingController(text: detail['address'])).toList();
           _contactNoControllers = _siblingsData.map((detail) => TextEditingController(text: detail['contact_no'])).toList();
+
+          // Integrate sib_id into _siblingsData list
+          for (int i = 0; i < _siblingsData.length; i++) {
+            _siblingsData[i]['sib_id'] = data['siblings'][i]['sib_id'];
+          }
         }
 
         if (data['pris'] is List && data['pris'].isNotEmpty) {
@@ -388,14 +419,14 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Alert"),
+          title: const Text("Alert"),
           content: Text(message),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -404,7 +435,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
   }
 
   // Update Code
-  Future<void> updateData(BuildContext context) async {
+  Future<void> updateData(BuildContext context, String userId) async {
 
     // Personal Details
     final Map<String, dynamic> data = {
@@ -437,16 +468,18 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
     // Formation Details
     for (int i = 0; i < _accreditations.length; i++) {
-      data['Formation $i Title'] = _accreditationTitleControllers[i].text;
-      data['Formation $i From'] = _accreditationFromControllers[i].text;
-      data['Formation $i To'] = _accreditationToControllers[i].text;
-      data['Formation $i At'] = _accreditationAtControllers[i].text;
-      data['Formation $i Place'] = _accreditationPlaceControllers[i].text;
+      final Map<String, dynamic> accreditationData = {
+        'acc_id': _accreditations[i]['acc_id'],
+        'title': _accreditationTitleControllers[i].text,
+        'acc_from': _accreditationFromControllers[i].text,
+        'acc_to': _accreditationToControllers[i].text,
+        'acc_at': _accreditationAtControllers[i].text,
+        'place': _accreditationPlaceControllers[i].text,
+      };
+      data['Formation $i'] = accreditationData;
     }
 
-    // Education Details
-
-    // School
+    // Education Details: School
     for (int i = 0; i < _userSchoolDetails.length; i++) {
       final TextEditingController classController = _userSchoolClassControllers[i];
       final TextEditingController marksPercentageController = _userSchoolMarksPercentageControllers[i];
@@ -454,30 +487,38 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController addressController = _userSchoolAddressControllers[i];
       final TextEditingController yearOfPassoutController = _userSchoolYearOfPassoutControllers[i];
 
-      data['School Class $i'] = classController.text;
-      data['School Marks Percentage $i'] = marksPercentageController.text;
-      data['School University $i'] = universityController.text;
-      data['School Address $i'] = addressController.text;
-      data['School Year of Passout $i'] = yearOfPassoutController.text;
+      final Map<String, dynamic> schoolData = {
+        'school_id': _userSchoolDetails[i]['school_id'],
+        'class': classController.text,
+        'marks_percentage': marksPercentageController.text,
+        'university': universityController.text,
+        'school_address': addressController.text,
+        'year_of_passout': yearOfPassoutController.text,
+      };
+      data['School $i'] = schoolData;
     }
 
-    // Plus Two
-    for (int i = 0; i < _plusTwoStreamControllers.length; i++) {
+    // Education Details: Plus Two
+    for (int i = 0; i < _plusTwoDetails.length; i++) {
       final TextEditingController streamController = _plusTwoStreamControllers[i];
       final TextEditingController marksController = _plusTwoMarksControllers[i];
       final TextEditingController boardController = _plusTwoBoardControllers[i];
       final TextEditingController yearOfPassoutController = _plusTwoYearOfPassoutControllers[i];
       final TextEditingController addressController = _plusTwoSchoolAddressControllers[i];
 
-      data['Plus Two Stream/Subject $i'] = streamController.text;
-      data['Plus Two Marks $i'] = marksController.text;
-      data['Plus Two Board/University $i'] = boardController.text;
-      data['Plus Two Year of Passout $i'] = yearOfPassoutController.text;
-      data['Plus Two School Address $i'] = addressController.text;
+      final Map<String, dynamic> plusTwoData = {
+        'plus_two_id': _plusTwoDetails[i]['plus_two_id'],
+        'stream/subject': streamController.text,
+        'marks': marksController.text,
+        'board_university': boardController.text,
+        'year_of_passout': yearOfPassoutController.text,
+        'school_address': addressController.text,
+      };
+      data['Plus Two $i'] = plusTwoData;
     }
 
-    // UG Details
-    for (int i = 0; i < _ugradDegreeControllers.length; i++) {
+    // Education Details: UG Details
+    for (int i = 0; i < _ugradDetails.length; i++) {
       final TextEditingController degreeController = _ugradDegreeControllers[i];
       final TextEditingController subjectController = _ugradSubjectControllers[i];
       final TextEditingController markController = _ugradMarkControllers[i];
@@ -485,16 +526,20 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController yearOfPassoutController = _ugradYearOfPassoutControllers[i];
       final TextEditingController colNameAddressController = _ugradColNameAddressControllers[i];
 
-      data['UG Degree $i'] = degreeController.text;
-      data['UG Subject $i'] = subjectController.text;
-      data['UG Mark $i'] = markController.text;
-      data['UG Board/University $i'] = boardController.text;
-      data['UG Year of Passout $i'] = yearOfPassoutController.text;
-      data['UG College Name & Address $i'] = colNameAddressController.text;
+      final Map<String, dynamic> ugradData = {
+        'user_ud_id': _ugradDetails[i]['user_ud_id'],
+        'degree': degreeController.text,
+        'subject': subjectController.text,
+        'mark': markController.text,
+        'board_university': boardController.text,
+        'year_of_passout': yearOfPassoutController.text,
+        'col_name_address': colNameAddressController.text,
+      };
+      data['UG $i'] = ugradData;
     }
 
-    // PG Details
-    for (int i = 0; i < _pgPostDegreeControllers.length; i++) {
+    // Education Details: PG Details
+    for (int i = 0; i < _pgDetails.length; i++) {
       final TextEditingController postDegreeController = _pgPostDegreeControllers[i];
       final TextEditingController subjectController = _pgSubjectControllers[i];
       final TextEditingController markController = _pgMarkControllers[i];
@@ -502,12 +547,16 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController yearOfPassoutController = _pgYearOfPassoutControllers[i];
       final TextEditingController colNameAddressController = _pgColNameAddressControllers[i];
 
-      data['PG Post Degree $i'] = postDegreeController.text;
-      data['PG Subject $i'] = subjectController.text;
-      data['PG Mark $i'] = markController.text;
-      data['PG Board/University $i'] = boardController.text;
-      data['PG Year of Passout $i'] = yearOfPassoutController.text;
-      data['PG College Name & Address $i'] = colNameAddressController.text;
+      final Map<String, dynamic> pgData = {
+        'user_pg_id': _pgDetails[i]['user_pg_id'],
+        'post_degree': postDegreeController.text,
+        'subject': subjectController.text,
+        'mark': markController.text,
+        'board_university': boardController.text,
+        'year_of_passout': yearOfPassoutController.text,
+        'col_name_address': colNameAddressController.text,
+      };
+      data['PG $i'] = pgData;
     }
 
     // Family Details: Father
@@ -562,13 +611,19 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController addressController = _addressControllers[i];
       final TextEditingController contactNoController = _contactNoControllers[i];
 
-      data['Sibling Name $i'] = siblingNameController.text;
-      data['Sibling Gender $i'] = genderController.text;
-      data['Sibling DOB $i'] = dobController.text;
-      data['Sibling Occupation $i'] = occupationController.text;
-      data['Sibling Address $i'] = addressController.text;
-      data['Sibling Contact Number $i'] = contactNoController.text;
+      final Map<String, dynamic> siblingData = {
+        'sib_id': _siblingsData[i]['sib_id'], // Include sib_id
+        'sibling_name': siblingNameController.text,
+        'gender': genderController.text,
+        'dob': dobController.text,
+        'occupation': occupationController.text,
+        'address': addressController.text,
+        'contact_no': contactNoController.text,
+      };
+
+      data['Sibling $i'] = siblingData;
     }
+
 
     // Sister Details
     for (int i = 0; i < _prisRelativeNameControllers.length; i++) {
@@ -623,9 +678,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
     // Convert data to JSON
     final jsonData = jsonEncode(data);
 
+    // print(jsonData);
+
     try {
       final response = await http.post(
-        Uri.parse(API.edit),
+        Uri.parse('${API.edit}?user_id=$userId'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -1005,6 +1062,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void addPlusTwoDetail() {
     setState(() {
+      _plusTwoDetails.add({}); // Add an empty map for the new Plus Two detail
       _plusTwoStreamControllers.add(TextEditingController());
       _plusTwoMarksControllers.add(TextEditingController());
       _plusTwoBoardControllers.add(TextEditingController());
@@ -1015,6 +1073,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void removePlusTwoDetail(int index) {
     setState(() {
+      _plusTwoDetails.removeAt(index); // Remove the corresponding detail from the list
       _plusTwoStreamControllers.removeAt(index);
       _plusTwoMarksControllers.removeAt(index);
       _plusTwoBoardControllers.removeAt(index);
@@ -1023,8 +1082,10 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
     });
   }
 
+
   void addUgDetail() {
     setState(() {
+      _ugradDetails.add({});
       _ugradDegreeControllers.add(TextEditingController());
       _ugradSubjectControllers.add(TextEditingController());
       _ugradMarkControllers.add(TextEditingController());
@@ -1036,6 +1097,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void removeUgDetail(int index) {
     setState(() {
+      _ugradDetails.removeAt(index);
       _ugradDegreeControllers.removeAt(index);
       _ugradSubjectControllers.removeAt(index);
       _ugradMarkControllers.removeAt(index);
@@ -1047,6 +1109,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void addPgDetail() {
     setState(() {
+      _pgDetails.add({});
       _pgPostDegreeControllers.add(TextEditingController());
       _pgSubjectControllers.add(TextEditingController());
       _pgMarkControllers.add(TextEditingController());
@@ -1058,6 +1121,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void removePgDetail(int index) {
     setState(() {
+      _pgDetails.removeAt(index);
       _pgPostDegreeControllers.removeAt(index);
       _pgSubjectControllers.removeAt(index);
       _pgMarkControllers.removeAt(index);
@@ -1097,6 +1161,18 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
     });
   }
 
+  void removeAccreditationAtIndex(int index) {
+    setState(() {
+      _accreditationTitleControllers.removeAt(index);
+      _accreditationFromControllers.removeAt(index);
+      _accreditationToControllers.removeAt(index);
+      _accreditationAtControllers.removeAt(index);
+      _accreditationPlaceControllers.removeAt(index);
+      _accreditations.removeAt(index);
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1106,7 +1182,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           children: [
             const Text('Edit Member'),
             ElevatedButton(
-              onPressed: () => updateData(context),
+              onPressed: () => updateData(context, widget.userId),
               child: const Text('Update All'),
             ),
           ],
@@ -1350,7 +1426,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ElevatedButton.icon(
-                                onPressed: addUserSchoolDetail,
+                                onPressed: addAccreditation,
                                 label: const Text('Add'),
                                 icon: const Icon(Icons.add),
                               ),
@@ -1395,21 +1471,24 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                       ],
                                     ),
                                   ),
-                                  if (isTemporary) // Render cancel button only for temporary accreditations
-                                    Positioned(
-                                      top: 0,
-                                      right: 0,
-                                      child: IconButton(
-                                        icon: const Icon(Icons.cancel),
-                                        onPressed: () {
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.cancel),
+                                      onPressed: () {
+                                        if (isTemporary) {
                                           cancelAccreditationAtIndex(index);
-                                        },
-                                      ),
+                                        } else {
+                                          removeAccreditationAtIndex(index);
+                                        }
+                                      },
                                     ),
+                                  ),
                                 ],
                               ),
                             );
-                          }),
+                          }).toList(),
                         ],
                       ),
                     ),
@@ -1495,55 +1574,55 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               ElevatedButton.icon(
-                                onPressed: addUserSchoolDetail,
+                                onPressed: addPlusTwoDetail,
                                 label: const Text('Add'),
                                 icon: const Icon(Icons.add),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16.0),
-                            if (_plusTwoStreamControllers.isEmpty)
-                              const Text('NIL'),
-                            ..._plusTwoStreamControllers.asMap().entries.map((entry) {
-                              final int index = entry.key;
-                              final TextEditingController streamController = _plusTwoStreamControllers[index];
-                              final TextEditingController marksController = _plusTwoMarksControllers[index];
-                              final TextEditingController boardController = _plusTwoBoardControllers[index];
-                              final TextEditingController yearOfPassoutController = _plusTwoYearOfPassoutControllers[index];
-                              final TextEditingController addressController = _plusTwoSchoolAddressControllers[index];
+                          if (_plusTwoDetails.isEmpty)
+                            const Text('NIL'),
+                          ..._plusTwoDetails.asMap().entries.map((entry) {
+                            final int index = entry.key;
+                            final TextEditingController streamController = _plusTwoStreamControllers[index];
+                            final TextEditingController marksController = _plusTwoMarksControllers[index];
+                            final TextEditingController boardController = _plusTwoBoardControllers[index];
+                            final TextEditingController yearOfPassoutController = _plusTwoYearOfPassoutControllers[index];
+                            final TextEditingController addressController = _plusTwoSchoolAddressControllers[index];
 
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 16.0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      TextFormField(
-                                        controller: streamController,
-                                        decoration: const InputDecoration(labelText: 'Stream/Subject'),
-                                      ),
-                                      TextFormField(
-                                        controller: marksController,
-                                        decoration: const InputDecoration(labelText: 'Marks'),
-                                      ),
-                                      TextFormField(
-                                        controller: boardController,
-                                        decoration: const InputDecoration(labelText: 'Board/University'),
-                                      ),
-                                      TextFormField(
-                                        controller: yearOfPassoutController,
-                                        decoration: const InputDecoration(labelText: 'Year of Passout'),
-                                      ),
-                                      TextFormField(
-                                        controller: addressController,
-                                        decoration: const InputDecoration(labelText: 'School Address'),
-                                      ),
-                                      ElevatedButton.icon(
-                                        onPressed: () => removeUserSchoolDetail(index),
-                                        icon: const Icon(Icons.remove),
-                                        label: const Text('Remove'),
-                                      )
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 16.0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextFormField(
+                                      controller: streamController,
+                                      decoration: const InputDecoration(labelText: 'Stream/Subject'),
+                                    ),
+                                    TextFormField(
+                                      controller: marksController,
+                                      decoration: const InputDecoration(labelText: 'Marks'),
+                                    ),
+                                    TextFormField(
+                                      controller: boardController,
+                                      decoration: const InputDecoration(labelText: 'Board/University'),
+                                    ),
+                                    TextFormField(
+                                      controller: yearOfPassoutController,
+                                      decoration: const InputDecoration(labelText: 'Year of Passout'),
+                                    ),
+                                    TextFormField(
+                                      controller: addressController,
+                                      decoration: const InputDecoration(labelText: 'School Address'),
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: () => removePlusTwoDetail(index),
+                                      icon: const Icon(Icons.remove),
+                                      label: const Text('Remove'),
+                                    )
                                     ],
                                   ),
                                 ),
@@ -1558,16 +1637,16 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               ElevatedButton.icon(
-                                onPressed: addUserSchoolDetail,
+                                onPressed: addUgDetail,
                                 label: const Text('Add'),
                                 icon: const Icon(Icons.add),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16.0),
-                          if (_ugradDegreeControllers.isEmpty)
+                          if (_ugradDetails.isEmpty)
                             const Text('NIL'),
-                          ..._ugradDegreeControllers.asMap().entries.map((entry) {
+                          ..._ugradDetails.asMap().entries.map((entry) {
                             final int index = entry.key;
                             final TextEditingController degreeController = _ugradDegreeControllers[index];
                             final TextEditingController subjectController = _ugradSubjectControllers[index];
@@ -1608,7 +1687,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                       decoration: const InputDecoration(labelText: 'College Name & Address'),
                                     ),
                                     ElevatedButton.icon(
-                                      onPressed: () => removeUserSchoolDetail(index),
+                                      onPressed: () => removeUgDetail(index),
                                       icon: const Icon(Icons.remove),
                                       label: const Text('Remove'),
                                     )
@@ -1626,16 +1705,16 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               ElevatedButton.icon(
-                                onPressed: addUserSchoolDetail,
+                                onPressed: addPgDetail,
                                 label: const Text('Add'),
                                 icon: const Icon(Icons.add),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16.0),
-                          if (_pgPostDegreeControllers.isEmpty)
+                          if (_pgDetails.isEmpty)
                             const Text('NIL'),
-                          ..._pgPostDegreeControllers.asMap().entries.map((entry) {
+                          ..._pgDetails.asMap().entries.map((entry) {
                             final int index = entry.key;
                             final TextEditingController postDegreeController = _pgPostDegreeControllers[index];
                             final TextEditingController subjectController = _pgSubjectControllers[index];
@@ -1676,7 +1755,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                       decoration: const InputDecoration(labelText: 'College Name & Address'),
                                     ),
                                     ElevatedButton.icon(
-                                      onPressed: () => removeUserSchoolDetail(index),
+                                      onPressed: () => removePgDetail(index),
                                       icon: const Icon(Icons.remove),
                                       label: const Text('Remove'),
                                     )
