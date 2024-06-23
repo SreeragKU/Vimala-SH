@@ -342,7 +342,6 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           }
         }
 
-
         if (data['family'] is List && data['family'].isNotEmpty) {
           _familyData = List<Map<String, dynamic>>.from(data['family']);
           _fatherNameControllers = _familyData.map((detail) => TextEditingController(text: detail['father_name'])).toList();
@@ -376,21 +375,34 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           }
         }
 
+        // Check and assign pris data
         if (data['pris'] is List && data['pris'].isNotEmpty) {
           _prisDetails = List<Map<String, dynamic>>.from(data['pris']);
           _prisRelativeNameControllers = _prisDetails.map((detail) => TextEditingController(text: detail['relative_name'])).toList();
           _prisAddressControllers = _prisDetails.map((detail) => TextEditingController(text: detail['address'])).toList();
           _prisOrderControllers = _prisDetails.map((detail) => TextEditingController(text: detail['order'])).toList();
           _prisRelationshipControllers = _prisDetails.map((detail) => TextEditingController(text: detail['relationship'])).toList();
+
+          // Integrate pris_id into _prisDetails list
+          for (int i = 0; i < _prisDetails.length; i++) {
+            _prisDetails[i]['pris_id'] = data['pris'][i]['pris_id'];
+          }
         }
 
+        // Check and assign spers data
         if (data['spers'] is List && data['spers'].isNotEmpty) {
           _spersDetails = List<Map<String, dynamic>>.from(data['spers']);
           _spersRelNameControllers = _spersDetails.map((detail) => TextEditingController(text: detail['rel_name'])).toList();
           _spersAddressControllers = _spersDetails.map((detail) => TextEditingController(text: detail['address'])).toList();
           _spersContactNoControllers = _spersDetails.map((detail) => TextEditingController(text: detail['contact_no'])).toList();
+
+          // Integrate spers_id into _spersDetails list
+          for (int i = 0; i < _spersDetails.length; i++) {
+            _spersDetails[i]['spers_id'] = data['spers'][i]['spers_id'];
+          }
         }
 
+        // Check and assign prof_record data
         if (data['prof_record'] is List && data['prof_record'].isNotEmpty) {
           _profRecords = List<Map<String, dynamic>>.from(data['prof_record']);
           _instiNameControllers = _profRecords.map((record) => TextEditingController(text: record['insti_name'])).toList();
@@ -398,15 +410,25 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
           _joinDateControllers = _profRecords.map((record) => TextEditingController(text: record['joindate'])).toList();
           _noOfYearsControllers = _profRecords.map((record) => TextEditingController(text: record['no_of_years'])).toList();
           _retireStatusControllers = _profRecords.map((record) => TextEditingController(text: record['retire_status'])).toList();
+
+          // Integrate prof_id into _profRecords list
+          for (int i = 0; i < _profRecords.length; i++) {
+            _profRecords[i]['prof_id'] = data['prof_record'][i]['prof_id'];
+          }
         }
 
+        // Check and assign mission data
         if (data['mission'] is List && data['mission'].isNotEmpty) {
           _missions = List<Map<String, dynamic>>.from(data['mission']);
           _placeControllers = _missions.map((mission) => TextEditingController(text: mission['place'])).toList();
           _dutiesCongreControllers = _missions.map((mission) => TextEditingController(text: mission['duties_congre'])).toList();
           _dutiesApostControllers = _missions.map((mission) => TextEditingController(text: mission['duties_apost'])).toList();
-        }
 
+          // Integrate mission_id into _missions list
+          for (int i = 0; i < _missions.length; i++) {
+            _missions[i]['mission_id'] = data['mission'][i]['mission_id'];
+          }
+        }
       });
     } else {
       throw Exception('Failed to load member details');
@@ -612,7 +634,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController contactNoController = _contactNoControllers[i];
 
       final Map<String, dynamic> siblingData = {
-        'sib_id': _siblingsData[i]['sib_id'], // Include sib_id
+        'sib_id': _siblingsData[i]['sib_id'],
         'sibling_name': siblingNameController.text,
         'gender': genderController.text,
         'dob': dobController.text,
@@ -624,29 +646,38 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       data['Sibling $i'] = siblingData;
     }
 
-
-    // Sister Details
+    // Pris Details
     for (int i = 0; i < _prisRelativeNameControllers.length; i++) {
       final TextEditingController relativeNameController = _prisRelativeNameControllers[i];
       final TextEditingController addressController = _prisAddressControllers[i];
       final TextEditingController orderController = _prisOrderControllers[i];
       final TextEditingController relationshipController = _prisRelationshipControllers[i];
 
-      data['Sister Name $i'] = relativeNameController.text;
-      data['Sister Address $i'] = addressController.text;
-      data['Sister Order $i'] = orderController.text;
-      data['Sister Relationship $i'] = relationshipController.text;
+      final Map<String, dynamic> prisData = {
+        'pris_id':  _prisDetails[i]['pris_id'],
+        'relative_name': relativeNameController.text,
+        'address': addressController.text,
+        'order': orderController.text,
+        'relationship': relationshipController.text,
+      };
+
+      data['Pris $i'] = prisData;
     }
 
-    // Priest Details
+    // Spers Details
     for (int i = 0; i < _spersRelNameControllers.length; i++) {
       final TextEditingController relNameController = _spersRelNameControllers[i];
       final TextEditingController addressController = _spersAddressControllers[i];
       final TextEditingController contactNoController = _spersContactNoControllers[i];
 
-      data['Priest Name $i'] = relNameController.text;
-      data['Priest Address $i'] = addressController.text;
-      data['Priest Contact No $i'] = contactNoController.text;
+      final Map<String, dynamic> spersData = {
+        'spers_id': _spersDetails[i]['spers_id'],
+        'rel_name': relNameController.text,
+        'address': addressController.text,
+        'contact_no': contactNoController.text,
+      };
+
+      data['Spers $i'] = spersData;
     }
 
     // Prof Records
@@ -657,11 +688,14 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController noOfYearsController = _noOfYearsControllers[i];
       final TextEditingController retireStatusController = _retireStatusControllers[i];
 
-      data['Institution Name $i'] = instiNameController.text;
-      data['Designation $i'] = designationController.text;
-      data['Join Date $i'] = joinDateController.text;
-      data['Number of Years $i'] = noOfYearsController.text;
-      data['Retire Status $i'] = retireStatusController.text;
+      data['Institution Name $i'] = {
+        'insti_name': instiNameController.text,
+        'designation': designationController.text,
+        'joindate': joinDateController.text,
+        'no_of_years': noOfYearsController.text,
+        'retire_status': retireStatusController.text,
+        'prof_id': _profRecords[i]['prof_id'],
+      };
     }
 
     // Missions
@@ -670,9 +704,12 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       final TextEditingController dutiesCongreController = _dutiesCongreControllers[i];
       final TextEditingController dutiesApostController = _dutiesApostControllers[i];
 
-      data['Place $i'] = placeController.text;
-      data['Duties in Congregation $i'] = dutiesCongreController.text;
-      data['Duties in Apostolate $i'] = dutiesApostController.text;
+      data['Place $i'] = {
+        'place': placeController.text,
+        'duties_congre': dutiesCongreController.text,
+        'duties_apost': dutiesApostController.text,
+        'mission_id': _missions[i]['mission_id'],
+      };
     }
 
     // Convert data to JSON
@@ -962,7 +999,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void addProfRecord() {
     setState(() {
-      _profRecords.add({});
+      _profRecords.add({'prof_id': null});
       _instiNameControllers.add(TextEditingController());
       _designationControllers.add(TextEditingController());
       _joinDateControllers.add(TextEditingController());
@@ -984,7 +1021,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void addMission() {
     setState(() {
-      _missions.add({});
+      _missions.add({'mission_id': null});
       _placeControllers.add(TextEditingController());
       _dutiesCongreControllers.add(TextEditingController());
       _dutiesApostControllers.add(TextEditingController());
@@ -1002,7 +1039,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void addPrisDetail() {
     setState(() {
-      _prisDetails.add({});
+      _prisDetails.add({'pris_id': null});
       _prisRelativeNameControllers.add(TextEditingController());
       _prisAddressControllers.add(TextEditingController());
       _prisOrderControllers.add(TextEditingController());
@@ -1022,7 +1059,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
   void addSpersDetail() {
     setState(() {
-      _spersDetails.add({});
+      _spersDetails.add({'spers_id': null});
       _spersRelNameControllers.add(TextEditingController());
       _spersAddressControllers.add(TextEditingController());
       _spersContactNoControllers.add(TextEditingController());
@@ -1081,7 +1118,6 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
       _plusTwoSchoolAddressControllers.removeAt(index);
     });
   }
-
 
   void addUgDetail() {
     setState(() {
@@ -1172,6 +1208,33 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
     });
   }
 
+  void addSiblingDetail() {
+    setState(() {
+      _siblingsData.add({});
+      _siblingNameControllers.add(TextEditingController());
+      _genderControllers.add(TextEditingController());
+      _dobControllers.add(TextEditingController());
+      _occupationControllers.add(TextEditingController());
+      _addressControllers.add(TextEditingController());
+      _contactNoControllers.add(TextEditingController());
+    });
+  }
+
+  void removeSiblingDetail(int index) {
+    setState(() {
+      _siblingsData.removeAt(index);
+      _siblingNameControllers.removeAt(index);
+      _genderControllers.removeAt(index);
+      _dobControllers.removeAt(index);
+      _occupationControllers.removeAt(index);
+      _addressControllers.removeAt(index);
+      _contactNoControllers.removeAt(index);
+    });
+  }
+
+  bool isFatherButtonClicked = false;
+  bool isMotherButtonClicked = false;
+  bool isGuardianButtonClicked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1200,7 +1263,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                 Tab(text: 'Formation Details'),
                 Tab(text: 'Education Details'),
                 Tab(text: 'Family Details'),
-                Tab(text: 'Related Personalities'),
+                Tab(text: 'Emergency Contact'),
                 Tab(text: 'Records and Mission'),
               ],
             ),
@@ -1777,49 +1840,44 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                         children: [
                           // Father Details
                           if (_fatherNameControllers.isEmpty || _fatherNameControllers[0].text.isEmpty)
-                            Card(
-                              margin: const EdgeInsets.only(bottom: 16.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Father Details',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ),
-                                    TextFormField(
-                                      controller: _fatherNameControllers.isNotEmpty ? _fatherNameControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Name'),
-                                    ),
-                                    TextFormField(
-                                      controller: _dobFatherControllers.isNotEmpty ? _dobFatherControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Date of Birth'),
-                                    ),
-                                    TextFormField(
-                                      controller: _dodFatherControllers.isNotEmpty ? _dodFatherControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Date of Death'),
-                                    ),
-                                    TextFormField(
-                                      controller: _fatherAddressControllers.isNotEmpty ? _fatherAddressControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Address'),
-                                    ),
-                                    TextFormField(
-                                      controller: _fatherOccupationControllers.isNotEmpty ? _fatherOccupationControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Occupation'),
-                                    ),
-                                    TextFormField(
-                                      controller: _fatherParishDioceseNowControllers.isNotEmpty ? _fatherParishDioceseNowControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Parish/Diocese Now'),
-                                    ),
-                                    TextFormField(
-                                      controller: _fatherParishDioceseBirthControllers.isNotEmpty ? _fatherParishDioceseBirthControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Parish/Diocese at Birth'),
-                                    ),
-                                  ],
+                            if (!isFatherButtonClicked)
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 16.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Father Details',
+                                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: isFatherButtonClicked ? null : () {
+                                              setState(() {
+                                                _fatherNameControllers.add(TextEditingController());
+                                                _dobFatherControllers.add(TextEditingController());
+                                                _dodFatherControllers.add(TextEditingController());
+                                                _fatherAddressControllers.add(TextEditingController());
+                                                _fatherOccupationControllers.add(TextEditingController());
+                                                _fatherParishDioceseNowControllers.add(TextEditingController());
+                                                _fatherParishDioceseBirthControllers.add(TextEditingController());
+
+                                                // Set the boolean variable to true after adding details
+                                                isFatherButtonClicked = true;
+                                              });
+                                            },
+                                            child: const Text('Add'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
                           ..._fatherNameControllers.asMap().entries.map((entry) {
                             final int index = entry.key;
                             final TextEditingController fatherNameController = _fatherNameControllers[index];
@@ -1877,37 +1935,41 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
                           // Mother Details
                           if (_motherNameControllers.isEmpty || _motherNameControllers[0].text.isEmpty)
-                            Card(
-                              margin: const EdgeInsets.only(bottom: 16.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Mother Details',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ),
-                                    TextFormField(
-                                      controller: _motherNameControllers.isNotEmpty ? _motherNameControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Name'),
-                                    ),
-                                    TextFormField(
-                                      controller: _dobMotherControllers.isNotEmpty ? _dobMotherControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Date of Birth'),
-                                    ),
-                                    TextFormField(
-                                      controller: _dodMotherControllers.isNotEmpty ? _dodMotherControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Date of Death'),
-                                    ),
-                                    TextFormField(
-                                      controller: _motherOccupationControllers.isNotEmpty ? _motherOccupationControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Occupation'),
-                                    ),
-                                  ],
+                            if (!isMotherButtonClicked)
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 16.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Mother Details',
+                                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: isMotherButtonClicked ? null : () {
+                                              setState(() {
+                                                _motherNameControllers.add(TextEditingController());
+                                                _dobMotherControllers.add(TextEditingController());
+                                                _dodMotherControllers.add(TextEditingController());
+                                                _motherOccupationControllers.add(TextEditingController());
+
+                                                // Set the boolean variable to true after adding details
+                                                isMotherButtonClicked = true;
+                                              });
+                                            },
+                                            child: const Text('Add'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
                           ..._motherNameControllers.asMap().entries.map((entry) {
                             final int index = entry.key;
                             final TextEditingController motherNameController = _motherNameControllers[index];
@@ -1950,36 +2012,40 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
 
                           // Guardian Details
                           if (_guardianNameControllers.isEmpty || _guardianNameControllers[0].text.isEmpty)
-                            Card(
-                              margin: const EdgeInsets.only(bottom: 16.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Guardian Details',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ),
-                                    TextFormField(
-                                      controller: _guardianNameControllers.isNotEmpty ? _guardianNameControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Name'),
-                                    ),
-                                    TextFormField(
-                                      controller: _guardianAddressPhoneControllers.isNotEmpty ? _guardianAddressPhoneControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Address and Phone'),
-                                    ),
-                                    TextFormField(
-                                      controller: _guardianRelationControllers.isNotEmpty ? _guardianRelationControllers[0] : null,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Relation',
-                                      ),
-                                    ),
+                            if (!isGuardianButtonClicked)
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 16.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Guardian Details',
+                                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: isGuardianButtonClicked ? null : () {
+                                              setState(() {
+                                                _guardianNameControllers.add(TextEditingController());
+                                                _guardianAddressPhoneControllers.add(TextEditingController());
+                                                _guardianRelationControllers.add(TextEditingController());
 
-                                  ],
+                                                // Set the boolean variable to true after adding details
+                                                isGuardianButtonClicked = true;
+                                              });
+                                            },
+                                            child: const Text('Add Guardian'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
                           ..._guardianNameControllers.asMap().entries.map((entry) {
                             final int index = entry.key;
                             final TextEditingController guardianNameController = _guardianNameControllers[index];
@@ -1994,7 +2060,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Guardian ${index + 1} Details',
+                                      'Guardian Details',
                                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                     ),
                                     TextFormField(
@@ -2024,33 +2090,18 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Siblings Details',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ),
-                                    TextFormField(
-                                      controller: _siblingNameControllers.isNotEmpty ? _siblingNameControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Name'),
-                                    ),
-                                    TextFormField(
-                                      controller: _genderControllers.isNotEmpty ? _genderControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Gender'),
-                                    ),
-                                    TextFormField(
-                                      controller: _dobControllers.isNotEmpty ? _dobControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Date of Birth'),
-                                    ),
-                                    TextFormField(
-                                      controller: _occupationControllers.isNotEmpty ? _occupationControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Occupation'),
-                                    ),
-                                    TextFormField(
-                                      controller: _addressControllers.isNotEmpty ? _addressControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Address'),
-                                    ),
-                                    TextFormField(
-                                      controller: _contactNoControllers.isNotEmpty ? _contactNoControllers[0] : null,
-                                      decoration: const InputDecoration(labelText: 'Contact Number'),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          'Siblings Details',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: addSiblingDetail,
+                                          child: Text('Add Sibling'),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -2100,6 +2151,13 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                       controller: contactNoController,
                                       decoration: const InputDecoration(labelText: 'Contact Number'),
                                     ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: ElevatedButton(
+                                        onPressed: () => removeSiblingDetail(index),
+                                        child: Text('Remove Sibling'),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -2110,7 +2168,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                     ),
                   ),
 
-                  // Related Personalities Tab Content
+                  // Pris and Spers Tab Content
                   SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -2121,11 +2179,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Sister Details'),
+                                const Text('Serious Illness contact'),
                                 const SizedBox(width: 16.0),
                                 Text('${_prisDetails.length}'),
                                 ElevatedButton.icon(
-                                  onPressed: addUserSchoolDetail,
+                                  onPressed: addPrisDetail,
                                   label: const Text('Add'),
                                   icon: const Icon(Icons.add),
                                 ),
@@ -2166,7 +2224,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             ElevatedButton.icon(
-                                              onPressed: () => removeUserSchoolDetail(index),
+                                              onPressed: () => removePrisDetail(index),
                                               icon: const Icon(Icons.remove),
                                               label: const Text('Remove'),
                                             )
@@ -2185,11 +2243,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Priest Details'),
+                                const Text('Related Personalities'),
                                 const SizedBox(width: 16.0),
                                 Text('${_spersDetails.length}'),
                                 ElevatedButton.icon(
-                                  onPressed: addUserSchoolDetail,
+                                  onPressed: addSpersDetail,
                                   label: const Text('Add'),
                                   icon: const Icon(Icons.add),
                                 ),
@@ -2225,7 +2283,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             ElevatedButton.icon(
-                                              onPressed: () => removeUserSchoolDetail(index),
+                                              onPressed: () => removeSpersDetail(index),
                                               icon: const Icon(Icons.remove),
                                               label: const Text('Remove'),
                                             )
@@ -2258,7 +2316,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                 Text('${_profRecords.length}'),
                                 const SizedBox(width: 16.0),
                                 ElevatedButton.icon(
-                                  onPressed: addUserSchoolDetail,
+                                  onPressed: addProfRecord,
                                   label: const Text('Add'),
                                   icon: const Icon(Icons.add),
                                 ),
@@ -2309,7 +2367,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                           children: [
                                             // Button to remove a Prof Record entry
                                             ElevatedButton.icon(
-                                              onPressed: () => removeUserSchoolDetail(index),
+                                              onPressed: () => removeProfRecord(index),
                                               icon: const Icon(Icons.remove),
                                               label: const Text('Remove'),
                                             )
@@ -2332,7 +2390,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                 Text('${_missions.length}'), // Count of Missions
                                 const SizedBox(width: 16.0),
                                 ElevatedButton.icon(
-                                  onPressed: addUserSchoolDetail,
+                                  onPressed: addMission,
                                   label: const Text('Add'),
                                   icon: const Icon(Icons.add),
                                 ),
@@ -2373,7 +2431,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                           children: [
                                             // Button to remove a Mission entry
                                             ElevatedButton.icon(
-                                              onPressed: () => removeUserSchoolDetail(index),
+                                              onPressed: () => removeMission(index),
                                               icon: const Icon(Icons.remove),
                                               label: const Text('Remove'),
                                             )

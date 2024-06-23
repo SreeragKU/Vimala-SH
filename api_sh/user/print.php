@@ -261,7 +261,7 @@ try {
                 echo '</table>';
             }
         } else {
-            echo '<br>No pris data found.';
+            echo '<br>No Emergency contact data found.';
         }
 
         // Fetch data from tbl_spers
@@ -281,7 +281,7 @@ try {
                 echo '</table>';
             }
         } else {
-            echo '<br>No special person data found.';
+            echo '<br>No related personalities data found.';
         }
 
         // Fetch data from tbl_prof_record
