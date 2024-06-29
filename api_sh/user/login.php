@@ -3,7 +3,7 @@ include '../connection.php';
 
 $userName = $_POST['user_name'];
 $userPassword = md5($_POST['user_password']);
-$sqlQuery="SELECT * FROM tbl_login WHERE user_name='$userName' AND pword='$userPassword'";
+$sqlQuery = "SELECT * FROM tbl_login WHERE user_name='$userName' AND pword='$userPassword'";
 $resultOfQuery = $conn->query($sqlQuery);
 
 if ($resultOfQuery->num_rows > 0) {

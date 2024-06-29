@@ -44,6 +44,73 @@ class _MemberScreenState extends State<MemberScreen> {
     }
   }
 
+  Future<void> addMemberAndNavigate() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    // Call the API to insert a new record
+    final response = await http.post(Uri.parse('${API.insert}'));
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['success'] == true) {
+        int newUserId = jsonData['user_id'];
+
+        // Navigate to EditMemberScreen with the new user_id
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditMemberScreen(userId: newUserId.toString()),
+          ),
+        );
+
+      } else {
+        // Handle API error response
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text(jsonData['message']),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else {
+      // Handle HTTP error
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to add member. Please try again later.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   Future<void> fetchData({String? query}) async {
     setState(() {
       isLoading = true;
@@ -196,8 +263,27 @@ class _MemberScreenState extends State<MemberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Members'),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(55.0),
+        child: AppBar(
+          titleSpacing: 10.0,
+          title: Padding(
+            padding: EdgeInsets.only(left: 5.0, top: 15.0),
+            child: const Text('Members'),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0, top: 15.0, bottom: 5.0),
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.add),
+                label: Text('Add Member'),
+                onPressed: () {
+                  addMemberAndNavigate();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -335,6 +421,7 @@ class _MemberScreenState extends State<MemberScreen> {
       ),
     );
   }
+
 }
 
 void main() {

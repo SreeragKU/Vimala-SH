@@ -22,4 +22,7 @@ class API
   //edit
   static const edit = "$hostConnect/user/update.php";
 
+  //insert
+  static const insert = "$hostConnect/user/insert.php";
+
 }
