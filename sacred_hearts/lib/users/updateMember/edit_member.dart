@@ -1263,7 +1263,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                 Tab(text: 'Formation Details'),
                 Tab(text: 'Education Details'),
                 Tab(text: 'Family Details'),
-                Tab(text: 'Emergency Contact'),
+                Tab(text: 'Urgent Contacts'),
                 Tab(text: 'Records and Mission'),
               ],
             ),
@@ -2177,11 +2177,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                           // Pris Details ExpansionTile
                           ExpansionTile(
                             title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Serious Illness contact'),
-                                const SizedBox(width: 16.0),
+                                const Text('Emergency Contact: '),
+                                const Spacer(),
                                 Text('${_prisDetails.length}'),
+                                const SizedBox(width: 16.0),
                                 ElevatedButton.icon(
                                   onPressed: addPrisDetail,
                                   label: const Text('Add'),
@@ -2234,18 +2234,19 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                     ),
                                   ),
                                 );
-                              }),
+                              }).toList(),
                             ],
                           ),
 
                           // Spers Details ExpansionTile
                           ExpansionTile(
                             title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Related Personalities'),
-                                const SizedBox(width: 16.0),
+                                const Text('Related Personalities: '),
+                                const Spacer(),
+                                const Spacer(),
                                 Text('${_spersDetails.length}'),
+                                const SizedBox(width: 16.0),
                                 ElevatedButton.icon(
                                   onPressed: addSpersDetail,
                                   label: const Text('Add'),
@@ -2293,7 +2294,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
                                     ),
                                   ),
                                 );
-                              }),
+                              }).toList(),
                             ],
                           ),
                         ],

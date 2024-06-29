@@ -157,8 +157,6 @@ class _MemberScreenState extends State<MemberScreen> {
     }
   }
 
-
-
   Future<void> fetchUserDetails(String userId) async {
     final response = await http.get(Uri.parse('${API.print}/?user_id=$userId'));
     if (response.statusCode == 200) {
@@ -270,20 +268,20 @@ class _MemberScreenState extends State<MemberScreen> {
                               return const Icon(Icons.error);
                             }
                             final currentUserHasPermission = snapshot.data ?? false;
-                            if (currentUserHasPermission) {
-                              return PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert),
-                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                  const PopupMenuItem<String>(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit),
-                                        SizedBox(width: 8),
-                                        Text('Edit'),
-                                      ],
-                                    ),
+                            return PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert),
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit),
+                                      SizedBox(width: 8),
+                                      Text('Edit'),
+                                    ],
                                   ),
+                                ),
+                                if (currentUserHasPermission)
                                   const PopupMenuItem<String>(
                                     value: 'delete',
                                     child: Row(
@@ -294,30 +292,25 @@ class _MemberScreenState extends State<MemberScreen> {
                                       ],
                                     ),
                                   ),
-                                ],
-                                onSelected: (String action) {
-                                  if (action == 'edit') {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EditMemberScreen(userId: member['user_id']),
-                                      ),
-                                    );
-                                  } else if (action == 'delete') {
-                                    deleteMember(context, member['user_id']);
-                                  }
-                                },
-                              );
-
-                            } else {
-                              return const SizedBox();
-                            }
+                              ],
+                              onSelected: (String action) {
+                                if (action == 'edit') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditMemberScreen(userId: member['user_id']),
+                                    ),
+                                  );
+                                } else if (action == 'delete') {
+                                  deleteMember(context, member['user_id']);
+                                }
+                              },
+                            );
                           },
                         ),
                       ],
                     ),
                   );
-
                 }
               },
             ),
