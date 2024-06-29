@@ -1243,7 +1243,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> with SingleTickerPr
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Edit Member'),
+            const Text('Member Details'),
             ElevatedButton(
               onPressed: () => updateData(context, widget.userId),
               child: const Text('Update All'),
