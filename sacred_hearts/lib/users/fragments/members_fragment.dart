@@ -23,12 +23,19 @@ class _MemberScreenState extends State<MemberScreen> {
   bool isFetching = false;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  bool currentUserHasPermission = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    fetchPermissions();
     fetchData();
+  }
+
+  Future<void> fetchPermissions() async {
+    currentUserHasPermission = await RememberUserPrefs().checkUserPermissions();
+    setState(() {});
   }
 
   @override
@@ -64,7 +71,6 @@ class _MemberScreenState extends State<MemberScreen> {
             builder: (context) => EditMemberScreen(userId: newUserId.toString()),
           ),
         );
-
       } else {
         // Handle API error response
         showDialog(
@@ -213,6 +219,7 @@ class _MemberScreenState extends State<MemberScreen> {
                       fetchData();
                     });
                   } else {
+                    // Handle deletion error
                   }
                 },
               ),
@@ -221,6 +228,7 @@ class _MemberScreenState extends State<MemberScreen> {
         },
       );
     } catch (error) {
+      // Handle general error
     }
   }
 
@@ -272,16 +280,17 @@ class _MemberScreenState extends State<MemberScreen> {
             child: const Text('Members'),
           ),
           actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0, top: 15.0, bottom: 5.0),
-              child: ElevatedButton.icon(
-                icon: Icon(Icons.add),
-                label: Text('Add Member'),
-                onPressed: () {
-                  addMemberAndNavigate();
-                },
+            if (currentUserHasPermission)
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0, top: 15.0, bottom: 5.0),
+                child: ElevatedButton.icon(
+                  icon: Icon(Icons.add),
+                  label: Text('Add Member'),
+                  onPressed: () {
+                    addMemberAndNavigate();
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -344,54 +353,42 @@ class _MemberScreenState extends State<MemberScreen> {
                             );
                           },
                         ),
-                        FutureBuilder<bool>(
-                          future: RememberUserPrefs().checkUserPermissions(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            }
-                            if (snapshot.hasError) {
-                              return const Icon(Icons.error);
-                            }
-                            final currentUserHasPermission = snapshot.data ?? false;
-                            return PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert),
-                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
-                                  ),
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit),
+                                  SizedBox(width: 8),
+                                  Text('Edit'),
+                                ],
+                              ),
+                            ),
+                            if (currentUserHasPermission)
+                              const PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete),
+                                    SizedBox(width: 8),
+                                    Text('Delete'),
+                                  ],
                                 ),
-                                if (currentUserHasPermission)
-                                  const PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.delete),
-                                        SizedBox(width: 8),
-                                        Text('Delete'),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                              onSelected: (String action) {
-                                if (action == 'edit') {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => EditMemberScreen(userId: member['user_id']),
-                                    ),
-                                  );
-                                } else if (action == 'delete') {
-                                  deleteMember(context, member['user_id']);
-                                }
-                              },
-                            );
+                              ),
+                          ],
+                          onSelected: (String action) {
+                            if (action == 'edit') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditMemberScreen(userId: member['user_id']),
+                                ),
+                              );
+                            } else if (action == 'delete') {
+                              deleteMember(context, member['user_id']);
+                            }
                           },
                         ),
                       ],
@@ -421,7 +418,6 @@ class _MemberScreenState extends State<MemberScreen> {
       ),
     );
   }
-
 }
 
 void main() {
