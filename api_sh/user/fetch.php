@@ -28,11 +28,19 @@ function fetchData($conn, $sqlQuery, $key, &$data, $singleRecord = true)
 
 // Fetch data from tbl_user_details
 $sqlQuery = "SELECT user_name, official_name, baptism_name, pet_name, church_dob, school_dob, birth_place, baptism_place, 
-                baptism_date, confirmation_date, confirmation_place, ph_no, date_first_profession, date_final_profession,
+                baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
                 date_begin_service, date_retire, position, tdate, dod
              FROM tbl_user_details
              WHERE user_id = $user_id";
 fetchData($conn, $sqlQuery, 'user_details', $data);
+
+// Fetch and encode image file
+$imgUrl = '../../' . $data['user_details']['img_url'];
+if ($imgUrl) {
+    $imgData = file_get_contents($imgUrl);
+    $base64Image = base64_encode($imgData);
+    $data['user_details']['img_base64'] = $base64Image;
+}
 
 // Fetch data from tbl_personaldata
 $sqlQueryPersonalData = "SELECT blood_grp, illness_history, surgery_history, long_term_treatment,
@@ -42,7 +50,7 @@ $sqlQueryPersonalData = "SELECT blood_grp, illness_history, surgery_history, lon
 fetchData($conn, $sqlQueryPersonalData, 'personal_data', $data, false);
 
 // Fetch data from tbl_accredit
-$sqlQueryAccredit = "SELECT acc_id, title, acc_from, acc_to, acc_at, place
+$sqlQueryAccredit = "SELECT acc_id, title, acc_from, acc_to, acc_at, place, directress
                     FROM tbl_accredit
                     WHERE user_id = $user_id";
 fetchData($conn, $sqlQueryAccredit, 'accredit', $data, false);
@@ -108,6 +116,12 @@ $sqlQueryMission = "SELECT mission_id, place, duties_congre, duties_apost
                     FROM tbl_mission
                     WHERE user_id = $user_id";
 fetchData($conn, $sqlQueryMission, 'mission', $data, false);
+
+// Fetch data from tbl_diary_entries
+$sqlQueryDiaryEntries = "SELECT entry_id, user_id, entry_date, entry_title, entry_text
+                         FROM tbl_diary_entries
+                         WHERE user_id = $user_id";
+fetchData($conn, $sqlQueryDiaryEntries, 'diary_entries', $data, false);
 
 // Return the data
 header('Content-Type: application/json');

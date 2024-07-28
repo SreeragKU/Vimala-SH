@@ -9,17 +9,18 @@ use Dompdf\Options;
 try {
     ob_start();
 
-    $user_id = $_GET['user_id'];
+    $user_id =  $_GET['user_id'];
     // Fetch data from tbl_user_details
     $sqlQuery = "SELECT user_name, official_name, baptism_name, pet_name, church_dob, school_dob, birth_place, baptism_place, 
-                    baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
-                    date_begin_service, date_retire, position, tdate, dod
-             FROM tbl_user_details
-             WHERE user_id = $user_id";
+baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
+date_begin_service, date_retire, position, tdate, dod
+FROM tbl_user_details
+WHERE user_id = $user_id";
 
     $result = $conn->query($sqlQuery);
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
+
         // Adjust the image URL
         $imgUrl = '../../' . $row['img_url'];
 
@@ -31,60 +32,59 @@ try {
             echo '</div>';
         }
 
-        echo '<h1 style="text-align: center">User Details</h1>';
-        echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
+        echo '<h1 style="text-align: center">' . htmlspecialchars($row['user_name']) . '</h1>';
+        echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
         foreach ($row as $key => $value) {
-            if ($value !== '' && $value !== null && $key !== 'img_url') {
+            if ($value !== '' && $value !== null && $key !== 'img_url' && $key !== 'user_name') {
                 $label = ucwords(str_replace('_', ' ', $key));
-                echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
+                echo '<tr><td style="padding: 10px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 10px; text-align: left;">' . htmlspecialchars($value) . '</td></tr>';
             }
         }
         echo '</table>';
-        echo '</pre>';
 
         // Fetch data from tbl_personaldata
         $sqlQueryPersonalData = "SELECT history_url, blood_grp, illness_history, surgery_history, long_term_treatment,
-                                present_health, talents, handwriting_url, motto_principles
-                                FROM tbl_personaldata
-                                WHERE user_id = $user_id";
+    present_health, talents, handwriting_url, motto_principles
+    FROM tbl_personaldata
+    WHERE user_id = $user_id";
         $resultPersonalData = $conn->query($sqlQueryPersonalData);
+
         if ($resultPersonalData->num_rows > 0) {
             echo '<h1 style="text-align: center">Personal Data</h1>';
             while ($rowPersonalData = $resultPersonalData->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
+                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
                 foreach ($rowPersonalData as $key => $value) {
                     if ($value !== '' && $value !== null && $key !== 'history_url' && $key !== 'handwriting_url') {
                         $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
+                        echo '<tr><td style="padding: 10px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 10px; text-align: left;">' . htmlspecialchars($value) . '</td></tr>';
                     }
                 }
                 echo '</table>';
             }
-        } else {
-            echo '<br>No personal data found.';
         }
+
 
         // Fetch data from tbl_accredit
         $sqlQueryAccredit = "SELECT title, acc_from, acc_to, acc_at, place
-                            FROM tbl_accredit
-                            WHERE user_id = $user_id";
+FROM tbl_accredit
+WHERE user_id = $user_id";
         $resultAccredit = $conn->query($sqlQueryAccredit);
+
         if ($resultAccredit->num_rows > 0) {
-            echo '<h1 style="text-align: center">Formation details</h1>';
-            echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; border: 1px solid black;">';
+            echo '<h1 style="text-align: center">Formation Details</h1>';
+            echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
             echo '<tr>';
-            echo '<th>Title</th>';
-            echo '<th>Acc From</th>';
-            echo '<th>Acc To</th>';
-            echo '<th>Acc At</th>';
-            echo '<th>Place</th>';
+            echo '<th style="padding: 10px; text-align: center;">Title</th>';
+            echo '<th style="padding: 10px; text-align: center;">Acc From</th>';
+            echo '<th style="padding: 10px; text-align: center;">Acc To</th>';
+            echo '<th style="padding: 10px; text-align: center;">Acc At</th>';
+            echo '<th style="padding: 10px; text-align: center;">Place</th>';
             echo '</tr>';
+
             while ($rowAccredit = $resultAccredit->fetch_assoc()) {
                 echo '<tr>';
-                foreach ($rowAccredit as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        echo '<td style="padding: 5px; text-align: center; border: 1px solid black;">' . $value . '</td>';
-                    }
+                foreach ($rowAccredit as $value) {
+                    echo '<td style="padding: 10px; text-align: center;">' . ($value !== '' && $value !== null ? $value : 'N/A') . '</td>';
                 }
                 echo '</tr>';
             }
@@ -93,235 +93,194 @@ try {
             echo '<br>No accredit data found.';
         }
 
-        // Fetch data from tbl_user_school
-        $sqlQueryUserSchool = "SELECT class, marks_percentage, university, school_address, year_of_passout
-                                FROM tbl_user_school
-                                WHERE user_id = $user_id";
-        $resultUserSchool = $conn->query($sqlQueryUserSchool);
-        if ($resultUserSchool->num_rows > 0) {
-            echo '<h1 style="text-align: center">Eductaion Details</h1>';
-            echo '<u><h3 style="text-align: left; margin-left: 80px;">School :</h3></u>';
-            while ($rowUserSchool = $resultUserSchool->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowUserSchool as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
+
+        // Fetch combined data from all tables
+        $sqlQueryCombined = "
+        SELECT 'School' AS level, class AS description, marks_percentage, university, school_address, year_of_passout
+        FROM tbl_user_school
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Plus Two' AS level, `stream/subject` AS description, marks, board_university, school_address, year_of_passout
+        FROM tbl_plus_two
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Undergraduate' AS level, degree AS description, mark, board_university, col_name_address, year_of_passout
+        FROM tbl_ugrad
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Postgraduate' AS level, post_degree AS description, mark, board_university, col_name_address, year_of_passout
+        FROM tbl_pg
+        WHERE user_id = $user_id
+        ";
+
+        // Execute the query
+        $resultCombined = $conn->query($sqlQueryCombined);
+
+        echo '<h1 style="text-align: center">Education Details</h1>';
+        if ($resultCombined->num_rows > 0) {
+            echo '<table style="font-family: Arial, sans-serif; border-collapse: collapse; width: 100%;">';
+            echo '<tr><th style="padding: 10px; text-align: left;">Level</th><th style="padding: 10px; text-align: left;">Description</th><th style="padding: 10px; text-align: left;">Marks/Grade</th><th style="padding: 10px; text-align: left;">University/Board</th><th style="padding: 10px; text-align: left;">Address</th><th style="padding: 10px; text-align: left;">Year of Passout</th></tr>';
+
+            while ($row = $resultCombined->fetch_assoc()) {
+                echo '<tr>';
+                echo '<td style="padding: 5px; text-align: left;">' . $row['level'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $row['description'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . ($row['marks'] ?? $row['marks_percentage'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . ($row['board_university'] ?? $row['university'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . ($row['school_address'] ?? $row['col_name_address'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $row['year_of_passout'] . '</td>';
+                echo '</tr>';
             }
+            echo '</table>';
         } else {
-            echo '<br>No user school data found.';
+            echo '<br>No educational data found.';
         }
 
-        // Fetch data from tbl_plus_two
-        $sqlQueryPlusTwo = "SELECT `stream/subject`, marks, board_university, year_of_passout, school_address, residence
-                            FROM tbl_plus_two
-                            WHERE user_id = $user_id";
-        $resultPlusTwo = $conn->query($sqlQueryPlusTwo);
-        if ($resultPlusTwo->num_rows > 0) {
-            echo '<u><h3 style="text-align: left; margin-left: 80px;">Plus Two :</h3></u>';
-            while ($rowPlusTwo = $resultPlusTwo->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowPlusTwo as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-            }
-        } else {
-            echo '<br>No Plus Two data found.';
-        }
-
-        // Fetch data from tbl_ugrad
-        $sqlQueryUgrad = "SELECT degree, subject, mark, board_university, year_of_passout, col_name_address, residence
-                            FROM tbl_ugrad
-                            WHERE user_id = $user_id";
-        $resultUgrad = $conn->query($sqlQueryUgrad);
-        if ($resultUgrad->num_rows > 0) {
-            echo '<u><h3 style="text-align: left; margin-left: 80px;">Undergraduate :</h3></u>';
-            while ($rowUgrad = $resultUgrad->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowUgrad as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-            }
-        } else {
-            echo '<br>No undergraduate data found.';
-        }
-
-        // Fetch data from tbl_pg
-        $sqlQueryPg = "SELECT post_degree, subject, mark, board_university, year_of_passout, col_name_address, residence
-                        FROM tbl_pg
-                        WHERE user_id = $user_id";
-        $resultPg = $conn->query($sqlQueryPg);
-        if ($resultPg->num_rows > 0) {
-            echo '<u><h3 style="text-align: left; margin-left: 80px;">Postgraduate :</h3></u>';
-            while ($rowPg = $resultPg->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowPg as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-            }
-        } else {
-            echo '<br>No postgraduate data found.';
-        }
 
         // Fetch data from tbl_family
-        $sqlQueryFamily = "SELECT father_name, dob_father, dod_father, father_address, father_occupation, father_parish_diocese_now,
-                            father_parish_diocese_birth, mother_name, dob_mother, dod_mother, mother_occupation,
-                            guardian_name, guardian_address_phone, guardian_relation
-                            FROM tbl_family
-                            WHERE user_id = $user_id";
+        $sqlQueryFamily = "
+        SELECT 'Father' AS member_type, father_name AS name, dob_father AS dob, dod_father AS dod, father_address AS address, 
+            father_occupation AS occupation, father_parish_diocese_now AS parish_diocese_now, 
+            father_parish_diocese_birth AS parish_diocese_birth, NULL AS contact_no
+        FROM tbl_family
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Mother' AS member_type, mother_name AS name, dob_mother AS dob, dod_mother AS dod, NULL AS address, 
+            mother_occupation AS occupation, NULL AS parish_diocese_now, NULL AS parish_diocese_birth, NULL AS contact_no
+        FROM tbl_family
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Guardian' AS member_type, guardian_name AS name, NULL AS dob, NULL AS dod, guardian_address_phone AS address, 
+            NULL AS occupation, NULL AS parish_diocese_now, NULL AS parish_diocese_birth, NULL AS contact_no
+        FROM tbl_family
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Sibling' AS member_type, sibling_name AS name, dob AS dob, NULL AS dod, address, occupation, NULL AS parish_diocese_now, NULL AS parish_diocese_birth, contact_no
+        FROM tbl_sibling
+        WHERE user_id = $user_id
+        ";
+
+        // Execute the query
         $resultFamily = $conn->query($sqlQueryFamily);
+
+        echo '<h1 style="text-align: center">Family & Sibling Details</h1>';
         if ($resultFamily->num_rows > 0) {
-            echo '<h1 style="text-align: center">Family Details</h1>';
+            echo '<table style="font-family: Arial, sans-serif; border-collapse: collapse; width: 100%;">';
+            echo '<tr><th style="padding: 10px; text-align: left;">Relation</th><th style="padding: 10px; text-align: left;">Name</th><th style="padding: 10px; text-align: left;">Date of Birth</th><th style="padding: 10px; text-align: left;">Date of Death</th><th style="padding: 10px; text-align: left;">Address</th><th style="padding: 10px; text-align: left;">Occupation</th><th style="padding: 10px; text-align: left;">Parish/Diocese Now</th><th style="padding: 10px; text-align: left;">Parish/Diocese Birth</th><th style="padding: 10px; text-align: left;">Contact No</th></tr>';
+
             while ($rowFamily = $resultFamily->fetch_assoc()) {
-                echo '<u><h3 style="text-align: left; margin-left: 80px;">Father :</h3></u>';
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowFamily as $key => $value) {
-                    if ($value !== '' && $value !== null && strpos($key, 'father_') === 0) {
-                        $label = ucwords(str_replace('_', ' ', substr($key, 7)));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-
-                echo '<u><h3 style="text-align: left; margin-left: 80px;">Mother :</h3></u>';
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowFamily as $key => $value) {
-                    if ($value !== '' && $value !== null && strpos($key, 'mother_') === 0) {
-                        $label = ucwords(str_replace('_', ' ', substr($key, 7)));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-
-                echo '<u><h3 style="text-align: left; margin-left: 80px;">Guardian :</h3></u>';
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowFamily as $key => $value) {
-                    if ($value !== '' && $value !== null && strpos($key, 'guardian_') === 0) {
-                        $label = ucwords(str_replace('_', ' ', substr($key, 9)));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
+                echo '<tr>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['member_type'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['name'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['dob'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['dod'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['address'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['occupation'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['parish_diocese_now'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['parish_diocese_birth'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['contact_no'] . '</td>';
+                echo '</tr>';
             }
+            echo '</table>';
         } else {
-            echo '<br>No family data found.';
+            echo '<br>No family or sibling data found.';
         }
 
-        // Fetch data from tbl_sibling
-        $sqlQuerySibling = "SELECT sibling_name, gender, dob, occupation, address, contact_no
-                            FROM tbl_sibling
-                            WHERE user_id = $user_id";
-        $resultSibling = $conn->query($sqlQuerySibling);
-        if ($resultSibling->num_rows > 0) {
-            echo '<u><h3 style="text-align: left; margin-left: 80px;">Siblings :</h3></u>';
-            while ($rowSibling = $resultSibling->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowSibling as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
+        // Fetch data from tbl_pris and tbl_spers
+        $sqlQueryContacts = "
+    SELECT 'Priest/Sister' AS contact_type, relative_name AS name, address, `order` AS order_details, relationship, NULL AS contact_no
+    FROM tbl_pris
+    WHERE user_id = $user_id
+    UNION ALL
+    SELECT 'Emergency Contact' AS contact_type, rel_name AS name, address, NULL AS order_details, NULL AS relationship, contact_no
+    FROM tbl_spers
+    WHERE user_id = $user_id
+";
+
+        // Execute the query
+        $resultContacts = $conn->query($sqlQueryContacts);
+
+        if ($resultContacts->num_rows > 0) {
+            echo '<h1 style="text-align: center">Contact Details</h1>';
+            echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
+            echo '<tr>';
+            echo '<th style="padding: 10px; text-align: center;">Name</th>';
+            echo '<th style="padding: 10px; text-align: center;">Address</th>';
+            echo '<th style="padding: 10px; text-align: center;">Order/Details</th>';
+            echo '<th style="padding: 10px; text-align: center;">Relationship</th>';
+            echo '<th style="padding: 10px; text-align: center;">Contact No</th>';
+            echo '</tr>';
+
+            while ($rowContacts = $resultContacts->fetch_assoc()) {
+                echo '<tr>';
+                echo '<td style="padding: 10px; text-align: center;">' . $rowContacts['name'] . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . $rowContacts['address'] . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowContacts['order_details'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowContacts['relationship'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowContacts['contact_no'] ?? 'N/A') . '</td>';
+                echo '</tr>';
             }
+            echo '</table>';
         } else {
-            echo '<br>No sibling data found.';
+            echo '<br>No contact details found.';
         }
 
-        // Fetch data from tbl_pris
-        $sqlQueryPris = "SELECT relative_name, address, `order`, relationship
-                FROM tbl_pris
-                WHERE user_id = $user_id";
-        $resultPris = $conn->query($sqlQueryPris);
-        if ($resultPris->num_rows > 0) {
-            echo '<h1 style="text-align: center">Related Personalities</h1>';
-            while ($rowPris = $resultPris->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowPris as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-            }
-        } else {
-            echo '<br>No Emergency contact data found.';
-        }
-
-        // Fetch data from tbl_spers
-        $sqlQuerySpers = "SELECT rel_name, address, contact_no
-        FROM tbl_spers
-        WHERE user_id = $user_id";
-        $resultSpers = $conn->query($sqlQuerySpers);
-        if ($resultSpers->num_rows > 0) {
-            while ($rowSpers = $resultSpers->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowSpers as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
-            }
-        } else {
-            echo '<br>No related personalities data found.';
-        }
 
         // Fetch data from tbl_prof_record
         $sqlQueryProfRecord = "SELECT insti_name, designation, joindate, no_of_years, retire_status
-                        FROM tbl_prof_record
-                        WHERE user_id = $user_id";
+                       FROM tbl_prof_record
+                       WHERE user_id = $user_id";
         $resultProfRecord = $conn->query($sqlQueryProfRecord);
+
         if ($resultProfRecord->num_rows > 0) {
-            echo '<h1 style="text-align: center">Prof Record </h1>';
+            echo '<h1 style="text-align: center">Professional Record</h1>';
+            echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
+            echo '<tr>';
+            echo '<th style="padding: 10px; text-align: center;">Institution Name</th>';
+            echo '<th style="padding: 10px; text-align: center;">Designation</th>';
+            echo '<th style="padding: 10px; text-align: center;">Join Date</th>';
+            echo '<th style="padding: 10px; text-align: center;">No. of Years</th>';
+            echo '<th style="padding: 10px; text-align: center;">Retirement Status</th>';
+            echo '</tr>';
+
             while ($rowProfRecord = $resultProfRecord->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowProfRecord as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
+                echo '<tr>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowProfRecord['insti_name'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowProfRecord['designation'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowProfRecord['joindate'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowProfRecord['no_of_years'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowProfRecord['retire_status'] ?? 'N/A') . '</td>';
+                echo '</tr>';
             }
+            echo '</table>';
         } else {
             echo '<br>No professional record data found.';
         }
 
-        // Fetch data from tbl_prof_record
+
+        // Fetch data from tbl_mission
         $sqlQueryMission = "SELECT place, duties_congre, duties_apost
                     FROM tbl_mission
                     WHERE user_id = $user_id";
         $resultMission = $conn->query($sqlQueryMission);
+
         if ($resultMission->num_rows > 0) {
-            echo '<h1 style="text-align: center">Mission Details</h1>';
+            echo '<h1 style="text-align: center">Convents and Missions</h1>';
+            echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
+            echo '<tr>';
+            echo '<th style="padding: 10px; text-align: center;">Place</th>';
+            echo '<th style="padding: 10px; text-align: center;">Duties Congregation</th>';
+            echo '<th style="padding: 10px; text-align: center;">Duties Apostolate</th>';
+            echo '</tr>';
+
             while ($rowMission = $resultMission->fetch_assoc()) {
-                echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse;">';
-                foreach ($rowMission as $key => $value) {
-                    if ($value !== '' && $value !== null) {
-                        $label = ucwords(str_replace('_', ' ', $key));
-                        echo '<tr><td style="padding: 5px; text-align: left; font-weight: bold;">' . $label . ':</td><td style="padding: 5px; text-align: left">' . $value . '</td></tr>';
-                    }
-                }
-                echo '</table>';
+                echo '<tr>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowMission['place'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowMission['duties_congre'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowMission['duties_apost'] ?? 'N/A') . '</td>';
+                echo '</tr>';
             }
+            echo '</table>';
         } else {
             echo '<br>No mission data found.';
         }
@@ -358,3 +317,50 @@ try {
 } catch (Exception $e) {
     echo 'An error occurred: ' . $e->getMessage();
 }
+?>
+
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .grid-item {
+        background-color: #f1f1f1;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .grid-item h3 {
+        margin-top: 0;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 0 auto;
+        max-width: 1200px;
+        /* Adjust as needed */
+    }
+
+    .flex-item {
+        flex: 1 1 calc(25% - 10px);
+        /* Adjust percentage for the desired width, subtracting the gap */
+        box-sizing: border-box;
+        padding: 10px;
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        min-width: 250px;
+        /* Ensure a minimum width for items */
+    }
+
+    .flex-item p {
+        margin: 0 0 10px;
+    }
+</style>

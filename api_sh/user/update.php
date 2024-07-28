@@ -5,7 +5,7 @@ include '../connection.php';
 $user_id = intval($_GET['user_id']);
 
 // Initialize log file
-// $log_file = __DIR__ . "/update_log_$user_id.txt";
+$log_file = __DIR__ . "/update_log_$user_id.txt";
 // file_put_contents($log_file, "Process started\n", FILE_APPEND);
 
 // Get JSON data from request body
@@ -13,7 +13,7 @@ $json_data = file_get_contents('php://input');
 $data = json_decode($json_data, true);
 
 // Save the raw JSON data to a file
-// $file_path = __DIR__ . "/user_data_$user_id.json";
+$file_path = __DIR__ . "/user_data_$user_id.json";
 // file_put_contents($file_path, $json_data);
 // file_put_contents($log_file, "Received JSON data and saved to file\n", FILE_APPEND);
 
@@ -134,28 +134,110 @@ try {
     exit;
 }
 
+// Fetch existing diary entries for the user
+$existingDiaryEntriesQuery = "SELECT entry_id FROM tbl_diary_entries WHERE user_id = $user_id";
+$existingDiaryEntriesResult = $conn->query($existingDiaryEntriesQuery);
+
+$existingDiaryEntries = [];
+while ($row = $existingDiaryEntriesResult->fetch_assoc()) {
+    $existingDiaryEntries[] = $row['entry_id'];
+}
+// file_put_contents($log_file, "Fetched existing diary entries\n", FILE_APPEND);
+
+// Collect entry_ids from post data
+$postedDiaryEntries = [];
+foreach ($data as $key => $value) {
+    if (strpos($key, 'DiaryEntry') === 0) {
+        if (isset($value['entry_id']) && $value['entry_id'] !== null) {
+            $postedDiaryEntries[] = $value['entry_id'];
+        }
+    }
+}
+
+// Find entry_ids to delete
+$diaryEntriesToDelete = array_diff($existingDiaryEntries, $postedDiaryEntries);
+
+if (!empty($diaryEntriesToDelete)) {
+    $deleteDiaryEntriesQuery = "DELETE FROM tbl_diary_entries WHERE entry_id IN (" . implode(',', $diaryEntriesToDelete) . ")";
+    if ($conn->query($deleteDiaryEntriesQuery) !== TRUE) {
+        $error = "Error deleting diary entries: " . $conn->error;
+        // file_put_contents($log_file, "$error\n", FILE_APPEND);
+        echo $error;
+        exit;
+    }
+    // file_put_contents($log_file, "Deleted old diary entries\n", FILE_APPEND);
+}
+
+// Insert or update diary entries
+foreach ($data as $key => $value) {
+    if (strpos($key, 'DiaryEntry') === 0) {
+        $entry_id = $value['entry_id'];
+        $title = $value['title'];
+        $date = $value['date'];
+        $text = $value['text'];
+
+        if ($entry_id === null || $entry_id === "") {
+            // Insert new diary entry
+            $insertDiaryEntryQuery = "INSERT INTO tbl_diary_entries (user_id, entry_title, entry_date, entry_text) VALUES 
+                ($user_id, '$title', '$date', '$text')";
+
+            if ($conn->query($insertDiaryEntryQuery) !== TRUE) {
+                $error = "Error inserting new diary entry: " . $conn->error;
+                // file_put_contents($log_file, "$error\n", FILE_APPEND);
+                echo $error;
+                exit;
+            }
+            // file_put_contents($log_file, "Inserted new diary entry\n", FILE_APPEND);
+        } else {
+            // Update existing diary entry
+            $updateDiaryEntryQuery = "UPDATE tbl_diary_entries SET 
+                entry_title = '$title',
+                entry_date = '$date',
+                entry_text = '$text'
+                WHERE entry_id = $entry_id";
+
+            if ($conn->query($updateDiaryEntryQuery) !== TRUE) {
+                $error = "Error updating diary entry ID $entry_id: " . $conn->error;
+                // file_put_contents($log_file, "$error\n", FILE_APPEND);
+                echo $error;
+                exit;
+            }
+            // file_put_contents($log_file, "Updated diary entry ID $entry_id\n", FILE_APPEND);
+        }
+    }
+}
+
+
 // Fetch existing accreditations for the user
 $existingAccreditQuery = "SELECT acc_id FROM tbl_accredit WHERE user_id = $user_id";
 $existingAccreditResult = $conn->query($existingAccreditQuery);
+
+if (!$existingAccreditResult) {
+    $error = "Error fetching existing accreditations: " . $conn->error;
+    // file_put_contents($log_file, "$error\n", FILE_APPEND);
+    echo $error;
+    exit;
+}
 
 $existingAccredits = [];
 while ($row = $existingAccreditResult->fetch_assoc()) {
     $existingAccredits[] = $row['acc_id'];
 }
-// file_put_contents($log_file, "Fetched existing accreditations\n", FILE_APPEND);
+// file_put_contents($log_file, "Fetched existing accreditations: " . print_r($existingAccredits, true) . "\n", FILE_APPEND);
 
 // Collect acc_ids from post data
-$postedAccredits = [];
+$postedAccreds = [];
 foreach ($data as $key => $value) {
     if (strpos($key, 'Formation') === 0) {
         if (isset($value['acc_id']) && $value['acc_id'] !== null) {
-            $postedAccredits[] = $value['acc_id'];
+            $postedAccreds[] = intval($value['acc_id']);
         }
     }
 }
+// file_put_contents($log_file, "Posted accreditations: " . print_r($postedAccreds, true) . "\n", FILE_APPEND);
 
 // Find acc_ids to delete
-$accreditsToDelete = array_diff($existingAccredits, $postedAccredits);
+$accreditsToDelete = array_diff($existingAccredits, $postedAccreds);
 
 if (!empty($accreditsToDelete)) {
     $deleteAccreditsQuery = "DELETE FROM tbl_accredit WHERE acc_id IN (" . implode(',', $accreditsToDelete) . ")";
@@ -165,23 +247,24 @@ if (!empty($accreditsToDelete)) {
         echo $error;
         exit;
     }
-    // file_put_contents($log_file, "Deleted old accreditations\n", FILE_APPEND);
+    // file_put_contents($log_file, "Deleted accreditations: " . implode(',', $accreditsToDelete) . "\n", FILE_APPEND);
 }
 
 // Insert or update accreditations
 foreach ($data as $key => $value) {
     if (strpos($key, 'Formation') === 0) {
-        $acc_id = $value['acc_id'];
+        $acc_id = intval($value['acc_id']);
         $title = $value['title'];
         $acc_from = $value['acc_from'];
         $acc_to = $value['acc_to'];
         $acc_at = $value['acc_at'];
         $place = $value['place'];
+        $directress = $value['directress']; // Add directress
 
-        if ($acc_id === null) {
+        if ($acc_id === 0) {
             // Insert new accreditation
-            $insertAccreditQuery = "INSERT INTO tbl_accredit (user_id, title, acc_from, acc_to, acc_at, place) VALUES 
-                ($user_id, '$title', '$acc_from', '$acc_to', '$acc_at', '$place')";
+            $insertAccreditQuery = "INSERT INTO tbl_accredit (user_id, title, acc_from, acc_to, acc_at, place, directress) VALUES 
+                ($user_id, '$title', '$acc_from', '$acc_to', '$acc_at', '$place', '$directress')";
 
             if ($conn->query($insertAccreditQuery) !== TRUE) {
                 $error = "Error inserting new accreditation: " . $conn->error;
@@ -189,7 +272,7 @@ foreach ($data as $key => $value) {
                 echo $error;
                 exit;
             }
-            // file_put_contents($log_file, "Inserted new accreditation\n", FILE_APPEND);
+            // file_put_contents($log_file, "Inserted new accreditation with title '$title'\n", FILE_APPEND);
         } else {
             // Update existing accreditation
             $updateAccreditQuery = "UPDATE tbl_accredit SET 
@@ -197,7 +280,8 @@ foreach ($data as $key => $value) {
                 acc_from = '$acc_from',
                 acc_to = '$acc_to',
                 acc_at = '$acc_at',
-                place = '$place'
+                place = '$place',
+                directress = '$directress' 
                 WHERE acc_id = $acc_id";
 
             if ($conn->query($updateAccreditQuery) !== TRUE) {
@@ -210,6 +294,9 @@ foreach ($data as $key => $value) {
         }
     }
 }
+
+// file_put_contents($log_file, "Process completed\n", FILE_APPEND);
+
 
 // Function to escape single quotes
 function escapeSingleQuotes($string)
@@ -1135,5 +1222,6 @@ foreach ($data as $key => $value) {
         }
     }
 }
+
 
 $conn->close();
