@@ -9,11 +9,11 @@ use Dompdf\Options;
 try {
     ob_start();
 
-    $user_id =  $_GET['user_id'];
+    $user_id = $_GET['user_id'];
     // Fetch data from tbl_user_details
     $sqlQuery = "SELECT user_name, official_name, baptism_name, pet_name, church_dob, school_dob, birth_place, baptism_place, 
 baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
-date_begin_service, date_retire, position, tdate, dod
+date_begin_service, date_retire, position, dod
 FROM tbl_user_details
 WHERE user_id = $user_id";
 
@@ -137,36 +137,54 @@ WHERE user_id = $user_id";
         }
 
 
-        // Fetch data from tbl_family
+        // Fetch data from tbl_family excluding parish columns
         $sqlQueryFamily = "
-        SELECT 'Father' AS member_type, father_name AS name, dob_father AS dob, dod_father AS dod, father_address AS address, 
-            father_occupation AS occupation, father_parish_diocese_now AS parish_diocese_now, 
-            father_parish_diocese_birth AS parish_diocese_birth, NULL AS contact_no
-        FROM tbl_family
-        WHERE user_id = $user_id
-        UNION ALL
-        SELECT 'Mother' AS member_type, mother_name AS name, dob_mother AS dob, dod_mother AS dod, NULL AS address, 
-            mother_occupation AS occupation, NULL AS parish_diocese_now, NULL AS parish_diocese_birth, NULL AS contact_no
-        FROM tbl_family
-        WHERE user_id = $user_id
-        UNION ALL
-        SELECT 'Guardian' AS member_type, guardian_name AS name, NULL AS dob, NULL AS dod, guardian_address_phone AS address, 
-            NULL AS occupation, NULL AS parish_diocese_now, NULL AS parish_diocese_birth, NULL AS contact_no
-        FROM tbl_family
-        WHERE user_id = $user_id
-        UNION ALL
-        SELECT 'Sibling' AS member_type, sibling_name AS name, dob AS dob, NULL AS dod, address, occupation, NULL AS parish_diocese_now, NULL AS parish_diocese_birth, contact_no
-        FROM tbl_sibling
-        WHERE user_id = $user_id
-        ";
+SELECT 'Father' AS member_type, father_name AS name, dob_father AS dob, dod_father AS dod, father_address AS address, 
+    father_occupation AS occupation, NULL AS contact_no
+FROM tbl_family
+WHERE user_id = $user_id
+UNION ALL
+SELECT 'Mother' AS member_type, mother_name AS name, dob_mother AS dob, dod_mother AS dod, NULL AS address, 
+    mother_occupation AS occupation, NULL AS contact_no
+FROM tbl_family
+WHERE user_id = $user_id
+UNION ALL
+SELECT 'Guardian' AS member_type, guardian_name AS name, NULL AS dob, NULL AS dod, guardian_address_phone AS address, 
+    NULL AS occupation, NULL AS contact_no
+FROM tbl_family
+WHERE user_id = $user_id
+UNION ALL
+SELECT 'Sibling' AS member_type, sibling_name AS name, dob AS dob, NULL AS dod, address, occupation, contact_no
+FROM tbl_sibling
+WHERE user_id = $user_id
+";
 
-        // Execute the query
+        // Execute the query for the primary data
         $resultFamily = $conn->query($sqlQueryFamily);
 
+        // Fetch parish data separately
+        $sqlQueryParish = "
+SELECT 'Father' AS member_type, father_name AS name, father_parish_diocese_now AS parish_now, father_parish_diocese_birth AS parish_birth
+FROM tbl_family
+WHERE user_id = $user_id
+";
+
+        // Execute the query for the parish data
+        $resultParish = $conn->query($sqlQueryParish);
+
+        // Display primary family data
         echo '<h1 style="text-align: center">Family & Sibling Details</h1>';
         if ($resultFamily->num_rows > 0) {
             echo '<table style="font-family: Arial, sans-serif; border-collapse: collapse; width: 100%;">';
-            echo '<tr><th style="padding: 10px; text-align: left;">Relation</th><th style="padding: 10px; text-align: left;">Name</th><th style="padding: 10px; text-align: left;">Date of Birth</th><th style="padding: 10px; text-align: left;">Date of Death</th><th style="padding: 10px; text-align: left;">Address</th><th style="padding: 10px; text-align: left;">Occupation</th><th style="padding: 10px; text-align: left;">Parish/Diocese Now</th><th style="padding: 10px; text-align: left;">Parish/Diocese Birth</th><th style="padding: 10px; text-align: left;">Contact No</th></tr>';
+            echo '<tr>
+    <th style="padding: 10px; text-align: left; width: 10%;">Relation</th>
+    <th style="padding: 10px; text-align: left; width: 10%;">Name</th>
+    <th style="padding: 10px; text-align: left; width: 10%;">Date of Birth</th>
+    <th style="padding: 10px; text-align: left; width: 10%;">Date of Death</th>
+    <th style="padding: 10px; text-align: left; width: 10%;">Address</th>
+    <th style="padding: 10px; text-align: left; width: 10%;">Occupation</th>
+    <th style="padding: 10px; text-align: left; width: 10%;">Contact No</th>
+  </tr>';
 
             while ($rowFamily = $resultFamily->fetch_assoc()) {
                 echo '<tr>';
@@ -176,8 +194,6 @@ WHERE user_id = $user_id";
                 echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['dod'] . '</td>';
                 echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['address'] . '</td>';
                 echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['occupation'] . '</td>';
-                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['parish_diocese_now'] . '</td>';
-                echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['parish_diocese_birth'] . '</td>';
                 echo '<td style="padding: 5px; text-align: left;">' . $rowFamily['contact_no'] . '</td>';
                 echo '</tr>';
             }
@@ -185,6 +201,31 @@ WHERE user_id = $user_id";
         } else {
             echo '<br>No family or sibling data found.';
         }
+
+        // Display parish data
+        echo '<h1 style="text-align: center">Family Parish Details</h1>';
+        if ($resultParish->num_rows > 0) {
+            echo '<table style="font-family: Arial, sans-serif; border-collapse: collapse; width: 100%;">';
+            echo '<tr>
+    <th style="padding: 10px; text-align: left; width: 10%;">Relation</th>
+    <th style="padding: 10px; text-align: left; width: 20%;">Name</th>
+    <th style="padding: 10px; text-align: left; width: 35%;">Parish Now</th>
+    <th style="padding: 10px; text-align: left; width: 35%;">Parish Birth</th>
+  </tr>';
+
+            while ($rowParish = $resultParish->fetch_assoc()) {
+                echo '<tr>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowParish['member_type'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowParish['name'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowParish['parish_now'] . '</td>';
+                echo '<td style="padding: 5px; text-align: left;">' . $rowParish['parish_birth'] . '</td>';
+                echo '</tr>';
+            }
+            echo '</table>';
+        } else {
+            echo '<br>No parish data found.';
+        }
+
 
         // Fetch data from tbl_pris and tbl_spers
         $sqlQueryContacts = "
@@ -283,6 +324,34 @@ WHERE user_id = $user_id";
             echo '</table>';
         } else {
             echo '<br>No mission data found.';
+        }
+
+        // Fetch data from achievements table
+        $sqlQueryAchievements = "SELECT title, sub_group, date, description FROM achievements";
+        $resultAchievements = $conn->query($sqlQueryAchievements);
+
+        // Add achievements section to the PDF
+        echo '<h1 style="text-align: center">Achievements</h1>';
+        if ($resultAchievements->num_rows > 0) {
+            echo '<table style="margin: 20px auto; font-family: Arial, sans-serif; border-collapse: collapse; width: 80%;">';
+            echo '<tr>';
+            echo '<th style="padding: 10px; text-align: center;">Achievement</th>';
+            echo '<th style="padding: 10px; text-align: center;">Achieved for</th>';
+            echo '<th style="padding: 10px; text-align: center;">Date</th>';
+            echo '<th style="padding: 10px; text-align: center;">Description</th>';
+            echo '</tr>';
+
+            while ($rowAchievements = $resultAchievements->fetch_assoc()) {
+                echo '<tr>';
+                echo '<td style="padding: 10px;">' . ($rowAchievements['title'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px;">' . ($rowAchievements['sub_group'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px; text-align: center;">' . ($rowAchievements['date'] ?? 'N/A') . '</td>';
+                echo '<td style="padding: 10px;">' . ($rowAchievements['description'] ?? 'N/A') . '</td>';
+                echo '</tr>';
+            }
+            echo '</table>';
+        } else {
+            echo '<br>No achievements data found.';
         }
 
 

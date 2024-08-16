@@ -28,4 +28,19 @@ class API
   //editprofile
   static const editprofile = "$hostConnect/user/updateProfile.php";
 
+  //toggle
+  static const toggle = "$hostConnect/user/toggleAccess.php";
+
+  //create achievement
+  static const addAchievement = "$hostConnect/user/createAchievement.php";
+
+  //fetch achievement
+  static const fetchAchievement = "$hostConnect/user/fetchAchievement.php";
+
+  //edit achievement
+  static const editAchievement = "$hostConnect/user/editAchievement.php";
+
+  //delete achievement
+  static const deleteAchievement = "$hostConnect/user/deleteAchievement.php";
+
 }

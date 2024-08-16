@@ -8,6 +8,8 @@ import 'package:sacred_hearts/api_connection/api_connection.dart';
 import 'package:open_file/open_file.dart';
 import 'package:sacred_hearts/users/updateMember/edit_member.dart';
 import 'package:sacred_hearts/users/userPreferences/user_preferences.dart';
+import 'package:sacred_hearts/users/achievements/achievement.dart';
+
 
 class MemberScreen extends StatefulWidget {
   @override
@@ -21,9 +23,10 @@ class _MemberScreenState extends State<MemberScreen> {
   int totalPages = 1;
   bool isLoading = false;
   bool isFetching = false;
+  bool currentUserHasPermission = false;
+  bool allowEditForAll = false;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  bool currentUserHasPermission = false;
 
   @override
   void initState() {
@@ -35,8 +38,55 @@ class _MemberScreenState extends State<MemberScreen> {
 
   Future<void> fetchPermissions() async {
     currentUserHasPermission = await RememberUserPrefs().checkUserPermissions();
+    await fetchToggleStatus(); // Fetch toggle status
     setState(() {});
   }
+
+
+  Future<void> fetchToggleStatus() async {
+    try {
+      final response = await http.get(Uri.parse('${API.toggle}'));
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        print(jsonData);
+        setState(() {
+          allowEditForAll = jsonData['status'] == true;
+        });
+      } else {
+        // Handle HTTP error
+        print('Failed to fetch toggle status');
+      }
+    } catch (e) {
+      print('Error fetching toggle status: $e');
+    }
+  }
+
+  Future<void> updateToggleStatus(bool status) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${API.toggle}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': status}),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['success'] == true) {
+          print('Toggle status updated successfully');
+        } else {
+          print('Failed to update toggle status: ${jsonData['message']}');
+        }
+      } else {
+        print('Failed to update toggle status');
+      }
+    } catch (e) {
+      print('Error updating toggle status: $e');
+    }
+  }
+
 
   @override
   void dispose() {
@@ -276,20 +326,54 @@ class _MemberScreenState extends State<MemberScreen> {
         child: AppBar(
           titleSpacing: 10.0,
           title: Padding(
-            padding: EdgeInsets.only(left: 5.0, top: 15.0),
+            padding: EdgeInsets.only(top: 15.0),
             child: const Text('Members'),
           ),
           actions: [
             if (currentUserHasPermission)
               Padding(
-                padding: const EdgeInsets.only(right: 16.0, top: 15.0, bottom: 5.0),
+                padding: const EdgeInsets.only(right: 40.0, top: 15.0, bottom: 5.0),
                 child: ElevatedButton.icon(
                   icon: Icon(Icons.add),
-                  label: Text('Add Member'),
+                  label: Text('Add'),
                   onPressed: () {
                     addMemberAndNavigate();
                   },
                 ),
+              ),
+            if (currentUserHasPermission)
+              Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Edit Access:',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              SizedBox(width: 8.0), // Add space between the text and the switch
+                              Switch(
+                                value: allowEditForAll,
+                                onChanged: (bool value) async {
+                                  setState(() {
+                                    allowEditForAll = value;
+                                  });
+                                  await updateToggleStatus(value);
+                                },
+                                activeColor: Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
               ),
           ],
         ),
@@ -304,7 +388,8 @@ class _MemberScreenState extends State<MemberScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: const InputDecoration(
-                      hintText: 'Search by name...',
+                      labelText: 'Search',
+                      prefixIcon: Icon(Icons.search),
                     ),
                   ),
                 ),
@@ -356,16 +441,17 @@ class _MemberScreenState extends State<MemberScreen> {
                         PopupMenuButton<String>(
                           icon: const Icon(Icons.more_vert),
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit),
-                                  SizedBox(width: 8),
-                                  Text('Edit'),
-                                ],
+                            if (allowEditForAll || currentUserHasPermission)
+                              const PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit),
+                                    SizedBox(width: 8),
+                                    Text('Edit'),
+                                  ],
+                                ),
                               ),
-                            ),
                             if (currentUserHasPermission)
                               const PopupMenuItem<String>(
                                 value: 'delete',
@@ -374,6 +460,16 @@ class _MemberScreenState extends State<MemberScreen> {
                                     Icon(Icons.delete),
                                     SizedBox(width: 8),
                                     Text('Delete'),
+                                  ],
+                                ),
+                              ),
+                            const PopupMenuItem<String>(
+                                value: 'achievements',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.star),
+                                    SizedBox(width: 8),
+                                    Text('Achievements'),
                                   ],
                                 ),
                               ),
@@ -388,6 +484,13 @@ class _MemberScreenState extends State<MemberScreen> {
                               );
                             } else if (action == 'delete') {
                               deleteMember(context, member['user_id']);
+                            } else if (action == 'achievements') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AchievementScreen(userId: member['user_id']),
+                                ),
+                              );
                             }
                           },
                         ),

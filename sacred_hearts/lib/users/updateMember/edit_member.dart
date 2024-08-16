@@ -34,7 +34,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
   late TextEditingController _dateBeginServiceController;
   late TextEditingController _dateRetireController;
   late TextEditingController _positionController;
-  late TextEditingController _tdateController;
   late TextEditingController _dodController;
   late TextEditingController _bloodGrpController;
   late TextEditingController _illnessHistoryController;
@@ -132,16 +131,11 @@ class _EditMemberScreenState extends State<EditMemberScreen>
   List<TextEditingController> _dutiesCongreControllers = [];
   List<TextEditingController> _dutiesApostControllers = [];
 
-  List<Map<String, dynamic>> _diaryEntries = [];
-  List<TextEditingController> _diaryEntryTitleControllers = [];
-  List<TextEditingController> _diaryEntryDateControllers = [];
-  List<TextEditingController> _diaryEntryTextControllers = [];
-
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 8, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
     _nameController = TextEditingController();
     _baptismNameController = TextEditingController();
     _petNameController = TextEditingController();
@@ -158,7 +152,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
     _dateBeginServiceController = TextEditingController();
     _dateRetireController = TextEditingController();
     _positionController = TextEditingController();
-    _tdateController = TextEditingController();
     _dodController = TextEditingController();
     _bloodGrpController = TextEditingController();
     _illnessHistoryController = TextEditingController();
@@ -335,7 +328,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
         await http.get(Uri.parse('${API.fetch}?user_id=${widget.userId}'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      // print(data["diary_entries"]);
       setState(() {
         _nameController.text = data['user_details']['official_name'] ?? '';
         _baptismNameController.text =
@@ -361,44 +353,11 @@ class _EditMemberScreenState extends State<EditMemberScreen>
             data['user_details']['date_begin_service'] ?? '';
         _dateRetireController.text = data['user_details']['date_retire'] ?? '';
         _positionController.text = data['user_details']['position'] ?? '';
-        _tdateController.text = data['user_details']['tdate'] ?? '';
         _dodController.text = data['user_details']['dod'] ?? '';
 
         if (data['user_details']['img_base64'] != null) {
           String imgBase64 = data['user_details']['img_base64'];
           _decodedImage = base64.decode(imgBase64);
-        }
-
-        if (data.containsKey('diary_entries')) {
-          print('diary_entries key exists'); // Debug print
-          if (data['diary_entries'] is List) {
-            print('diary_entries is a List'); // Debug print
-            if (data['diary_entries'].isNotEmpty) {
-              print('diary_entries is not empty'); // Debug print
-              _diaryEntries = List<Map<String, dynamic>>.from(data['diary_entries']);
-              print('Fetched diary entries: $_diaryEntries'); // Debug print
-
-              _diaryEntryTitleControllers = _diaryEntries
-                  .map((entry) => TextEditingController(text: entry['entry_title'] ?? ''))
-                  .toList();
-              _diaryEntryDateControllers = _diaryEntries
-                  .map((entry) => TextEditingController(text: entry['entry_date'] ?? ''))
-                  .toList();
-              _diaryEntryTextControllers = _diaryEntries
-                  .map((entry) => TextEditingController(text: entry['entry_text'] ?? ''))
-                  .toList();
-
-              for (int i = 0; i < _diaryEntries.length; i++) {
-                _diaryEntries[i]['entry_id'] = data['diary_entries'][i]['entry_id'];
-              }
-            } else {
-              print('diary_entries is empty');
-            }
-          } else {
-            print('diary_entries is not a List');
-          }
-        } else {
-          print('diary_entries key does not exist');
         }
 
         if (data['personal_data'] is List && data['personal_data'].isNotEmpty) {
@@ -796,7 +755,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
       'Date of Begin Service': _dateBeginServiceController.text,
       'Date of Retire': _dateRetireController.text,
       'Position': _positionController.text,
-      'Tdate': _tdateController.text,
       'Date of Death': _dodController.text,
       'Blood Group': _bloodGrpController.text,
       'Illness History': _illnessHistoryController.text,
@@ -1076,21 +1034,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
         'mission_id': _missions[i]['mission_id'],
       };
     }
-
-    // Diary Entries
-    for (int i = 0; i < _diaryEntryTitleControllers.length; i++) {
-      final TextEditingController titleController = _diaryEntryTitleControllers[i];
-      final TextEditingController dateController = _diaryEntryDateControllers[i];
-      final TextEditingController textController = _diaryEntryTextControllers[i];
-
-      data['DiaryEntry $i'] = {
-        'title': titleController.text,
-        'date': dateController.text,
-        'text': textController.text,
-        'entry_id': _diaryEntries[i]['entry_id'],
-      };
-    }
-
     // Convert data to JSON
     final jsonData = jsonEncode(data);
 
@@ -1189,7 +1132,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
     _dateBeginServiceController.dispose();
     _dateRetireController.dispose();
     _positionController.dispose();
-    _tdateController.dispose();
     _dodController.dispose();
     _bloodGrpController.dispose();
     _illnessHistoryController.dispose();
@@ -1656,39 +1598,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
     });
   }
 
-  void _addDiaryEntry() {
-    setState(() {
-      Map<String, dynamic> newEntry = {
-        'entry_title': '',
-        'entry_date': DateTime.now().toString(),
-        'entry_text': '',
-      };
-      _diaryEntries.insert(0, newEntry); // Insert at the beginning
-      _diaryEntryTitleControllers.insert(0, TextEditingController());
-      _diaryEntryDateControllers.insert(0, TextEditingController(text: newEntry['entry_date']));
-      _diaryEntryTextControllers.insert(0, TextEditingController());
-    });
-  }
-
-  void _removeDiaryEntry(int index) {
-    setState(() {
-      _diaryEntries.removeAt(index);
-      _diaryEntryTitleControllers[index].dispose();
-      _diaryEntryDateControllers[index].dispose();
-      _diaryEntryTextControllers[index].dispose();
-      _diaryEntryTitleControllers.removeAt(index);
-      _diaryEntryDateControllers.removeAt(index);
-      _diaryEntryTextControllers.removeAt(index);
-    });
-  }
-
-  void _editDiaryEntry(int index, String title, String text) {
-    setState(() {
-      _diaryEntries[index]['entry_title'] = title;
-      _diaryEntries[index]['entry_text'] = text;
-    });
-  }
-
   bool isFatherDetailsNotEmpty() {
     return _fatherNameControllers.isNotEmpty &&
         _fatherNameControllers.any((controller) => controller.text.isNotEmpty);
@@ -1724,7 +1633,7 @@ class _EditMemberScreenState extends State<EditMemberScreen>
         ),
       ),
       body: DefaultTabController(
-        length: 8,
+        length: 7,
         child: Column(
           children: <Widget>[
             TabBar(
@@ -1732,7 +1641,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
               isScrollable: true,
               tabs: const [
                 Tab(text: 'Profile Image'),
-                Tab(text: 'Diary Entries'),
                 Tab(text: 'Personal Details'),
                 Tab(text: 'Formation Details'),
                 Tab(text: 'Education Details'),
@@ -1817,84 +1725,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
                     ),
                   ),
                 ),
-
-                  // Diary Entries Tab
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Add New Entry Button
-                          ElevatedButton(
-                            onPressed: _addDiaryEntry,
-                            child: const Text('Add New Entry'),
-                          ),
-                          const SizedBox(height: 16.0),
-
-                          // Existing Diary Entries
-                          for (int i = 0; i < _diaryEntries.length; i++)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Header with Name and Date
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: TextFormField(
-                                            controller: _diaryEntryTitleControllers[i],
-                                            decoration: const InputDecoration(labelText: 'Title'),
-                                            onChanged: (value) {
-                                              _editDiaryEntry(i, value, _diaryEntryTextControllers[i].text);
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8.0),
-                                        Flexible(
-                                          child: TextFormField(
-                                            controller: _diaryEntryDateControllers[i],
-                                            decoration: const InputDecoration(labelText: 'Date'),
-                                            readOnly: true,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8.0),
-
-                                    // Body with Text
-                                    TextFormField(
-                                      controller: _diaryEntryTextControllers[i],
-                                      decoration: const InputDecoration(labelText: 'Text'),
-                                      maxLines: null,
-                                      onChanged: (value) {
-                                        _editDiaryEntry(i, _diaryEntryTitleControllers[i].text, value);
-                                      },
-                                    ),
-                                    const SizedBox(height: 8.0),
-
-                                    // Edit and Delete buttons
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () {
-                                            _removeDiaryEntry(i);
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
 
                   // Personal Data Tab Content
                   SingleChildScrollView(
@@ -2044,11 +1874,6 @@ class _EditMemberScreenState extends State<EditMemberScreen>
                                     controller: _positionController,
                                     decoration: const InputDecoration(
                                         labelText: 'Position'),
-                                  ),
-                                  TextFormField(
-                                    controller: _tdateController,
-                                    decoration: const InputDecoration(
-                                        labelText: 'Tdate'),
                                   ),
                                   TextFormField(
                                     controller: _dodController,

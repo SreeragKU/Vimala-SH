@@ -42,7 +42,6 @@ $date_final_profession = $conn->real_escape_string($data['Date of Final Professi
 $date_begin_service = $conn->real_escape_string($data['Date of Begin Service'] ?? '');
 $date_retire = $conn->real_escape_string($data['Date of Retire'] ?? '');
 $position = $conn->real_escape_string($data['Position'] ?? '');
-$tdate = $conn->real_escape_string($data['Tdate'] ?? '');
 $dod = $conn->real_escape_string($data['Date of Death'] ?? '');
 $blood_grp = $conn->real_escape_string($data['Blood Group'] ?? '');
 $illness_history = $conn->real_escape_string($data['Illness History'] ?? '');
@@ -101,7 +100,6 @@ try {
         date_begin_service = '$date_begin_service',
         date_retire = '$date_retire',
         position = '$position',
-        tdate = '$tdate',
         dod = '$dod'
         WHERE user_id = $user_id";
 
@@ -132,79 +130,6 @@ try {
     // file_put_contents($log_file, $e->getMessage() . "\n", FILE_APPEND);
     echo $e->getMessage();
     exit;
-}
-
-// Fetch existing diary entries for the user
-$existingDiaryEntriesQuery = "SELECT entry_id FROM tbl_diary_entries WHERE user_id = $user_id";
-$existingDiaryEntriesResult = $conn->query($existingDiaryEntriesQuery);
-
-$existingDiaryEntries = [];
-while ($row = $existingDiaryEntriesResult->fetch_assoc()) {
-    $existingDiaryEntries[] = $row['entry_id'];
-}
-// file_put_contents($log_file, "Fetched existing diary entries\n", FILE_APPEND);
-
-// Collect entry_ids from post data
-$postedDiaryEntries = [];
-foreach ($data as $key => $value) {
-    if (strpos($key, 'DiaryEntry') === 0) {
-        if (isset($value['entry_id']) && $value['entry_id'] !== null) {
-            $postedDiaryEntries[] = $value['entry_id'];
-        }
-    }
-}
-
-// Find entry_ids to delete
-$diaryEntriesToDelete = array_diff($existingDiaryEntries, $postedDiaryEntries);
-
-if (!empty($diaryEntriesToDelete)) {
-    $deleteDiaryEntriesQuery = "DELETE FROM tbl_diary_entries WHERE entry_id IN (" . implode(',', $diaryEntriesToDelete) . ")";
-    if ($conn->query($deleteDiaryEntriesQuery) !== TRUE) {
-        $error = "Error deleting diary entries: " . $conn->error;
-        // file_put_contents($log_file, "$error\n", FILE_APPEND);
-        echo $error;
-        exit;
-    }
-    // file_put_contents($log_file, "Deleted old diary entries\n", FILE_APPEND);
-}
-
-// Insert or update diary entries
-foreach ($data as $key => $value) {
-    if (strpos($key, 'DiaryEntry') === 0) {
-        $entry_id = $value['entry_id'];
-        $title = $value['title'];
-        $date = $value['date'];
-        $text = $value['text'];
-
-        if ($entry_id === null || $entry_id === "") {
-            // Insert new diary entry
-            $insertDiaryEntryQuery = "INSERT INTO tbl_diary_entries (user_id, entry_title, entry_date, entry_text) VALUES 
-                ($user_id, '$title', '$date', '$text')";
-
-            if ($conn->query($insertDiaryEntryQuery) !== TRUE) {
-                $error = "Error inserting new diary entry: " . $conn->error;
-                // file_put_contents($log_file, "$error\n", FILE_APPEND);
-                echo $error;
-                exit;
-            }
-            // file_put_contents($log_file, "Inserted new diary entry\n", FILE_APPEND);
-        } else {
-            // Update existing diary entry
-            $updateDiaryEntryQuery = "UPDATE tbl_diary_entries SET 
-                entry_title = '$title',
-                entry_date = '$date',
-                entry_text = '$text'
-                WHERE entry_id = $entry_id";
-
-            if ($conn->query($updateDiaryEntryQuery) !== TRUE) {
-                $error = "Error updating diary entry ID $entry_id: " . $conn->error;
-                // file_put_contents($log_file, "$error\n", FILE_APPEND);
-                echo $error;
-                exit;
-            }
-            // file_put_contents($log_file, "Updated diary entry ID $entry_id\n", FILE_APPEND);
-        }
-    }
 }
 
 

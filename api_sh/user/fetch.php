@@ -1,6 +1,5 @@
 <?php
 include '../connection.php';
-// Include the dompdf library
 require_once '../vendor/autoload.php';
 
 $user_id = $_GET['user_id'];
@@ -29,7 +28,7 @@ function fetchData($conn, $sqlQuery, $key, &$data, $singleRecord = true)
 // Fetch data from tbl_user_details
 $sqlQuery = "SELECT user_name, official_name, baptism_name, pet_name, church_dob, school_dob, birth_place, baptism_place, 
                 baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
-                date_begin_service, date_retire, position, tdate, dod
+                date_begin_service, date_retire, position, dod
              FROM tbl_user_details
              WHERE user_id = $user_id";
 fetchData($conn, $sqlQuery, 'user_details', $data);
@@ -116,12 +115,6 @@ $sqlQueryMission = "SELECT mission_id, place, duties_congre, duties_apost
                     FROM tbl_mission
                     WHERE user_id = $user_id";
 fetchData($conn, $sqlQueryMission, 'mission', $data, false);
-
-// Fetch data from tbl_diary_entries
-$sqlQueryDiaryEntries = "SELECT entry_id, user_id, entry_date, entry_title, entry_text
-                         FROM tbl_diary_entries
-                         WHERE user_id = $user_id";
-fetchData($conn, $sqlQueryDiaryEntries, 'diary_entries', $data, false);
 
 // Return the data
 header('Content-Type: application/json');
