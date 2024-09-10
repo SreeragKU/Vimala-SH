@@ -1532,16 +1532,16 @@ class _EditMemberScreenState extends State<EditMemberScreen>
   void addAccreditation() {
     setState(() {
       _accreditationTitleControllers.insert(0, TextEditingController());
-      _accreditationFromControllers.insert(0, TextEditingController());
-      _accreditationToControllers.insert(0, TextEditingController());
+      _accreditationFromControllers.insert(0, TextEditingController(text: '0000-00-00'));
+      _accreditationToControllers.insert(0, TextEditingController(text: '0000-00-00'));
       _accreditationAtControllers.insert(0, TextEditingController());
       _accreditationPlaceControllers.insert(0, TextEditingController());
       _accreditationDirectressControllers.insert(0, TextEditingController()); // Add for directress
 
       _accreditations.insert(0, {
         'title': '',
-        'acc_from': '',
-        'acc_to': '',
+        'acc_from': '0000-00-00',
+        'acc_to': '0000-00-00',
         'acc_at': '',
         'place': '',
         'directress': '', // Add for directress
