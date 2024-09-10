@@ -1,6 +1,5 @@
 <?php
 include '../connection.php';
-// Output the PDF using dompdf
 require_once '../vendor/autoload.php';
 
 use Dompdf\Dompdf;
@@ -12,10 +11,10 @@ try {
     $user_id = $_GET['user_id'];
     // Fetch data from tbl_user_details
     $sqlQuery = "SELECT user_name, official_name, baptism_name, pet_name, church_dob, school_dob, birth_place, baptism_place, 
-baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
-date_begin_service, date_retire, position, dod
-FROM tbl_user_details
-WHERE user_id = $user_id";
+    baptism_date, confirmation_date, confirmation_place, img_url, ph_no, date_first_profession, date_final_profession,
+    date_begin_service, date_retire, position, dod
+    FROM tbl_user_details
+    WHERE user_id = $user_id";
 
     $result = $conn->query($sqlQuery);
     if ($result->num_rows > 0) {
@@ -139,35 +138,35 @@ WHERE user_id = $user_id";
 
         // Fetch data from tbl_family excluding parish columns
         $sqlQueryFamily = "
-SELECT 'Father' AS member_type, father_name AS name, dob_father AS dob, dod_father AS dod, father_address AS address, 
-    father_occupation AS occupation, NULL AS contact_no
-FROM tbl_family
-WHERE user_id = $user_id
-UNION ALL
-SELECT 'Mother' AS member_type, mother_name AS name, dob_mother AS dob, dod_mother AS dod, NULL AS address, 
-    mother_occupation AS occupation, NULL AS contact_no
-FROM tbl_family
-WHERE user_id = $user_id
-UNION ALL
-SELECT 'Guardian' AS member_type, guardian_name AS name, NULL AS dob, NULL AS dod, guardian_address_phone AS address, 
-    NULL AS occupation, NULL AS contact_no
-FROM tbl_family
-WHERE user_id = $user_id
-UNION ALL
-SELECT 'Sibling' AS member_type, sibling_name AS name, dob AS dob, NULL AS dod, address, occupation, contact_no
-FROM tbl_sibling
-WHERE user_id = $user_id
-";
+        SELECT 'Father' AS member_type, father_name AS name, dob_father AS dob, dod_father AS dod, father_address AS address, 
+            father_occupation AS occupation, NULL AS contact_no
+        FROM tbl_family
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Mother' AS member_type, mother_name AS name, dob_mother AS dob, dod_mother AS dod, NULL AS address, 
+            mother_occupation AS occupation, NULL AS contact_no
+        FROM tbl_family
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Guardian' AS member_type, guardian_name AS name, NULL AS dob, NULL AS dod, guardian_address_phone AS address, 
+            NULL AS occupation, NULL AS contact_no
+        FROM tbl_family
+        WHERE user_id = $user_id
+        UNION ALL
+        SELECT 'Sibling' AS member_type, sibling_name AS name, dob AS dob, NULL AS dod, address, occupation, contact_no
+        FROM tbl_sibling
+        WHERE user_id = $user_id
+        ";
 
         // Execute the query for the primary data
         $resultFamily = $conn->query($sqlQueryFamily);
 
         // Fetch parish data separately
         $sqlQueryParish = "
-SELECT 'Father' AS member_type, father_name AS name, father_parish_diocese_now AS parish_now, father_parish_diocese_birth AS parish_birth
-FROM tbl_family
-WHERE user_id = $user_id
-";
+        SELECT 'Father' AS member_type, father_name AS name, father_parish_diocese_now AS parish_now, father_parish_diocese_birth AS parish_birth
+        FROM tbl_family
+        WHERE user_id = $user_id
+        ";
 
         // Execute the query for the parish data
         $resultParish = $conn->query($sqlQueryParish);
@@ -177,14 +176,14 @@ WHERE user_id = $user_id
         if ($resultFamily->num_rows > 0) {
             echo '<table style="font-family: Arial, sans-serif; border-collapse: collapse; width: 100%;">';
             echo '<tr>
-    <th style="padding: 10px; text-align: left; width: 10%;">Relation</th>
-    <th style="padding: 10px; text-align: left; width: 10%;">Name</th>
-    <th style="padding: 10px; text-align: left; width: 10%;">Date of Birth</th>
-    <th style="padding: 10px; text-align: left; width: 10%;">Date of Death</th>
-    <th style="padding: 10px; text-align: left; width: 10%;">Address</th>
-    <th style="padding: 10px; text-align: left; width: 10%;">Occupation</th>
-    <th style="padding: 10px; text-align: left; width: 10%;">Contact No</th>
-  </tr>';
+                <th style="padding: 10px; text-align: left; width: 10%;">Relation</th>
+                <th style="padding: 10px; text-align: left; width: 10%;">Name</th>
+                <th style="padding: 10px; text-align: left; width: 10%;">Date of Birth</th>
+                <th style="padding: 10px; text-align: left; width: 10%;">Date of Death</th>
+                <th style="padding: 10px; text-align: left; width: 10%;">Address</th>
+                <th style="padding: 10px; text-align: left; width: 10%;">Occupation</th>
+                <th style="padding: 10px; text-align: left; width: 10%;">Contact No</th>
+            </tr>';
 
             while ($rowFamily = $resultFamily->fetch_assoc()) {
                 echo '<tr>';
@@ -207,11 +206,11 @@ WHERE user_id = $user_id
         if ($resultParish->num_rows > 0) {
             echo '<table style="font-family: Arial, sans-serif; border-collapse: collapse; width: 100%;">';
             echo '<tr>
-    <th style="padding: 10px; text-align: left; width: 10%;">Relation</th>
-    <th style="padding: 10px; text-align: left; width: 20%;">Name</th>
-    <th style="padding: 10px; text-align: left; width: 35%;">Parish Now</th>
-    <th style="padding: 10px; text-align: left; width: 35%;">Parish Birth</th>
-  </tr>';
+                <th style="padding: 10px; text-align: left; width: 10%;">Relation</th>
+                <th style="padding: 10px; text-align: left; width: 20%;">Name</th>
+                <th style="padding: 10px; text-align: left; width: 35%;">Parish Now</th>
+                <th style="padding: 10px; text-align: left; width: 35%;">Parish Birth</th>
+            </tr>';
 
             while ($rowParish = $resultParish->fetch_assoc()) {
                 echo '<tr>';
@@ -229,14 +228,14 @@ WHERE user_id = $user_id
 
         // Fetch data from tbl_pris and tbl_spers
         $sqlQueryContacts = "
-    SELECT 'Priest/Sister' AS contact_type, relative_name AS name, address, `order` AS order_details, relationship, NULL AS contact_no
-    FROM tbl_pris
-    WHERE user_id = $user_id
-    UNION ALL
-    SELECT 'Emergency Contact' AS contact_type, rel_name AS name, address, NULL AS order_details, NULL AS relationship, contact_no
-    FROM tbl_spers
-    WHERE user_id = $user_id
-";
+            SELECT 'Priest/Sister' AS contact_type, relative_name AS name, address, `order` AS order_details, relationship, NULL AS contact_no
+            FROM tbl_pris
+            WHERE user_id = $user_id
+            UNION ALL
+            SELECT 'Emergency Contact' AS contact_type, rel_name AS name, address, NULL AS order_details, NULL AS relationship, contact_no
+            FROM tbl_spers
+            WHERE user_id = $user_id
+        ";
 
         // Execute the query
         $resultContacts = $conn->query($sqlQueryContacts);
@@ -327,7 +326,7 @@ WHERE user_id = $user_id
         }
 
         // Fetch data from achievements table
-        $sqlQueryAchievements = "SELECT title, sub_group, date, description FROM achievements";
+        $sqlQueryAchievements = "SELECT title, sub_group, date, description FROM achievements WHERE user_id = $user_id";
         $resultAchievements = $conn->query($sqlQueryAchievements);
 
         // Add achievements section to the PDF

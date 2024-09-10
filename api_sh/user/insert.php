@@ -3,7 +3,7 @@ include '../connection.php';
 
 function generateRandomNumber()
 {
-  return mt_rand(1000000000, 9999999999);
+  return mt_rand(1000000000, 2147483647);
 }
 
 $logId = generateRandomNumber();
